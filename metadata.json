@@ -1,0 +1,8 @@
+{
+  "name": "Layer 1 Identity Registry & Web Generator",
+  "description": "Enterprise-grade console for managing the Geo-Zone-Site Architecture, featuring a direct CSV validation staging pipeline and multi-tenant web generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
