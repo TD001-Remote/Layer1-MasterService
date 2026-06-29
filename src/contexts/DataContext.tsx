@@ -453,52 +453,114 @@ export function DataProvider({ children }: DataProviderProps) {
   const commitApproved = async (approvedRecords: PendingEntity[]) => {
     if (approvedRecords.length === 0) return;
 
-    let currentLastNum = activeEntities.length;
+    let currentEntityNum = activeEntities.length;
+    let currentNonEntityNum = nonEntities.length;
 
     try {
-      const newlyMigrated: ActiveEntity[] = [];
+      const newlyMigratedEntities: ActiveEntity[] = [];
+      const newlyMigratedNonEntities: NonEntity[] = [];
+      
       for (const p of approvedRecords) {
-        currentLastNum++;
-        const entPk = `ENT-${String(currentLastNum).padStart(6, '0')}`;
-        const relativeZone = zoneRefs.find((z) => z.zone_pk === p.target_zone_pk) || zoneRefs[0];
+        if (p.record_type === 'entity') {
+          // Handle ENTITY records - require full zone
+          currentEntityNum++;
+          const entPk = `ENT-${String(currentEntityNum).padStart(6, '0')}`;
+          const relativeZone = zoneRefs.find((z) => z.zone_pk === p.target_zone_pk);
 
-        const docObj: ActiveEntity = {
-          entity_pk: entPk,
-          entity_name: p.entity_name,
-          stateId: 'GEO-TN',
-          districtId: 'GEO-TN-MAY',
-          talukId: relativeZone ? relativeZone.talukId : 'GEO-TN-MAY-SIR',
-          cityVillageId: relativeZone ? relativeZone.cityVillageId : 'ZON-CITY-001',
-          areaId: relativeZone ? relativeZone.areaId : 'ZON-AREA-001',
-          streetId: relativeZone ? relativeZone.streetId : 'ZON-STR-001',
-          substreetId: relativeZone ? relativeZone.substreetId : null,
-          zone_pk: p.target_zone_pk,
-          primary_domain: p.primary_domain as any,
-          secondary_domains: [],
-          category_pk: p.category_pk,
-          category_name: p.category_name,
-          phone: p.phone,
-          visibility_type: p.visibility_type,
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          website_zone_entity_id: p.website_zone_entity_id || null,
-        };
+          if (!relativeZone) {
+            console.error(`Zone not found for entity: ${p.entity_name}`);
+            continue;
+          }
 
-        await entityApi.create(docObj);
-        newlyMigrated.push(docObj);
+          const docObj: ActiveEntity = {
+            entity_pk: entPk,
+            entity_name: p.entity_name,
+            stateId: p.stateId || relativeZone.stateId,
+            districtId: p.districtId || relativeZone.districtId,
+            talukId: p.talukId || relativeZone.talukId,
+            cityVillageId: p.cityVillageId || relativeZone.cityVillageId,
+            areaId: p.areaId || relativeZone.areaId,
+            streetId: p.streetId || relativeZone.streetId,
+            substreetId: p.substreetId || relativeZone.substreetId,
+            zone_pk: p.target_zone_pk!,
+            primary_domain: p.primary_domain as any,
+            secondary_domains: [],
+            category_pk: p.category_pk,
+            category_name: p.category_name,
+            phone: p.phone,
+            visibility_type: p.visibility_type,
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            website_zone_entity_id: p.website_zone_entity_id || null,
+          };
+
+          await entityApi.create(docObj);
+          newlyMigratedEntities.push(docObj);
+          
+        } else if (p.record_type === 'non-entity') {
+          // Handle NON-ENTITY records - GEO only, zone optional
+          currentNonEntityNum++;
+          const nonEntPk = `NENT-${String(currentNonEntityNum).padStart(6, '0')}`;
+          
+          // Build zone_pk if zone fields are provided
+          let zone_pk = p.target_zone_pk || '';
+          if (!zone_pk && p.streetId) {
+            const relativeZone = zoneRefs.find((z) => z.streetId === p.streetId);
+            zone_pk = relativeZone?.zone_pk || '';
+          }
+
+          const nonEntObj: NonEntity = {
+            non_entity_pk: nonEntPk,
+            non_entity_name: p.entity_name,
+            stateId: p.stateId,
+            districtId: p.districtId,
+            talukId: p.talukId,
+            cityVillageId: p.cityVillageId || '',
+            areaId: p.areaId || '',
+            streetId: p.streetId || '',
+            substreetId: p.substreetId || null,
+            zone_pk: zone_pk,
+            primary_domain: p.primary_domain,
+            secondary_domains: [],
+            category_pk: p.category_pk,
+            category_name: p.category_name,
+            type_pk: p.type_pk || '',
+            phone: p.phone,
+            visibility_type: p.visibility_type,
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            website_zone_entity_id: p.website_zone_entity_id || null,
+          };
+
+          await nonEntityApi.create(nonEntObj);
+          newlyMigratedNonEntities.push(nonEntObj);
+        }
+        
         await pendingApi.delete(p.id);
       }
 
-      setActiveEntities((prev) => [...prev, ...newlyMigrated]);
+      // Update state
+      if (newlyMigratedEntities.length > 0) {
+        setActiveEntities((prev) => [...prev, ...newlyMigratedEntities]);
+      }
+      if (newlyMigratedNonEntities.length > 0) {
+        setNonEntities((prev) => [...prev, ...newlyMigratedNonEntities]);
+      }
 
       const approvedIds = approvedRecords.map((a) => a.id);
       setPendingEntities((prev) => prev.filter((p) => !approvedIds.includes(p.id)));
 
-      showToast('success', `Consolidated Migration Complete: ${approvedRecords.length} records promoted.`);
+      const entityCount = newlyMigratedEntities.length;
+      const nonEntityCount = newlyMigratedNonEntities.length;
+      showToast(
+        'success',
+        `Migration Complete: ${entityCount} entities and ${nonEntityCount} non-entities promoted.`
+      );
     } catch (err) {
       console.error('Commit failed:', err);
-      showToast('warning', 'Promotion fails to synchronize down. Ensure Cloud connectivity is active.');
+      showToast('warning', 'Promotion fails to synchronize. Ensure Cloud connectivity is active.');
     }
   };
 

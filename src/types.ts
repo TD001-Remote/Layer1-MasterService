@@ -106,22 +106,27 @@ export interface NonEntity {
   stateId: string;
   districtId: string;
   talukId: string;
-  cityVillageId: string;
-  areaId: string;
-  streetId: string;
-  substreetId: string | null;
-  zone_pk: string; // Full Zone reference ID
+  cityVillageId?: string; // Optional for non-entities
+  areaId?: string; // Optional for non-entities
+  streetId?: string; // Optional for non-entities
+  substreetId?: string | null;
+  zone_pk?: string; // Optional for non-entities
   primary_domain: string;
   secondary_domains: string[];
   category_pk: string;
   category_name: string;
-  type_pk: string;
+  type_pk?: string; // Optional type for hierarchical branching
   phone?: string; // Optional phone number
   visibility_type: "Public" | "Private/Home";
   status: "active" | "stopped";
   createdAt: string;
   updatedAt: string;
   website_zone_entity_id?: string | null;
+  // NEW: Entity linking for asset relationships
+  linkedEntities: {
+    assetProvider?: string; // Entity ID (owner)
+    serviceProvider?: string; // Entity ID (operator)
+  };
 }
 
 // Active entity in the L1 Database
@@ -140,12 +145,19 @@ export interface ActiveEntity {
   secondary_domains: string[]; // List of other Domain Codes if hybrid
   category_pk: string; // e.g., CAT-000452
   category_name: string; // e.g., Multi-Specialty Hospital
+  type_pk?: string; // Optional type for hierarchical branching
   phone?: string; // Optional phone number
   visibility_type: "Public" | "Private/Home";
   status: "active" | "stopped";
   createdAt: string;
   updatedAt: string;
   website_zone_entity_id?: string | null; // Associated Website Zone/Site ID
+  // NEW: Entity roles for asset/service provider distinction
+  roles: {
+    isAssetProvider: boolean;
+    isServiceProvider: boolean;
+  };
+  linkedAssets?: string[]; // IDs of non-entities (assets) this entity owns/operates
 }
 
 // Pending record uploaded via CSV but waiting for manual review
@@ -186,4 +198,101 @@ export interface MasterCompareRecord {
   legal_name: string;
   verified_address: string;
   manager_notes: string;
+}
+
+// ============================================================
+// NEW: STAGING TYPES (No geo/zone assignment yet)
+// ============================================================
+
+export interface StagingEntity {
+  id: string; // Temporary staging ID
+  entity_name: string;
+  phone?: string;
+  domain_code: string; // NEW: from domains.ts (e.g., BUS-FOD)
+  category_id: string; // NEW: from domains.ts (e.g., CAT-BUSFOD-001)
+  roles: {
+    isAssetProvider: boolean;
+    isServiceProvider: boolean;
+  };
+  status: 'pending' | 'approved' | 'rejected';
+  uploadedAt: string;
+  // NO geo/zone fields in staging!
+}
+
+export interface StagingNonEntity {
+  id: string; // Temporary staging ID
+  non_entity_name: string;
+  domain_code: string; // NEW: from domains.ts (e.g., RE-COM)
+  category_id: string; // NEW: from domains.ts (e.g., CAT-RECOM-001)
+  status: 'pending' | 'approved' | 'rejected';
+  uploadedAt: string;
+  // NO geo/zone fields in staging!
+}
+
+// ============================================================
+// NEW: REGISTRY TYPES (With geo/zone assigned)
+// ============================================================
+
+export interface RegistryEntity extends Omit<StagingEntity, 'id' | 'uploadedAt'> {
+  entity_pk: string; // Final ENT-XXXXXX ID
+  zone_pk: string; // Required for entities
+  stateId: string;
+  districtId: string;
+  talukId: string;
+  cityVillageId: string;
+  areaId: string;
+  streetId: string;
+  substreetId?: string | null;
+  assignedAt: string;
+  assignedBy: string;
+  // Branch location
+  domain: string;
+  category: string;
+  type?: string; // Optional hierarchical type
+  linkedAssets?: string[]; // Non-entity IDs
+}
+
+export interface RegistryNonEntity extends Omit<StagingNonEntity, 'id' | 'uploadedAt'> {
+  non_entity_pk: string; // Final NENT-XXXXXX ID
+  stateId: string;
+  districtId: string;
+  talukId: string;
+  cityVillageId?: string; // Optional for non-entities
+  areaId?: string; // Optional for non-entities
+  streetId?: string; // Optional for non-entities
+  substreetId?: string | null;
+  zone_pk?: string; // Optional for non-entities
+  assignedAt: string;
+  assignedBy: string;
+  // Branch location
+  domain: string;
+  category: string;
+  type?: string; // Optional hierarchical type
+  linkedEntities: {
+    assetProvider?: string; // Entity ID (owner)
+    serviceProvider?: string; // Entity ID (operator)
+  };
+}
+
+// ============================================================
+// NEW: ASSIGNMENT DATA TYPES
+// ============================================================
+
+// Geo assignment data
+export interface GeoData {
+  zone_pk?: string;
+  stateId: string;
+  districtId: string;
+  talukId: string;
+  cityVillageId?: string;
+  areaId?: string;
+  streetId?: string;
+  substreetId?: string;
+}
+
+// Branch hierarchy for tree organization
+export interface BranchHierarchy {
+  domain: string;
+  category: string;
+  type?: string; // Optional for deeper branching
 }

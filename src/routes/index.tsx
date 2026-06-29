@@ -10,13 +10,16 @@ import Login from '../pages/auth/Login';
 import Dashboard from '../components/Dashboard';
 import GeoZoneManager from '../components/GeoZoneManager';
 import SiteProvisioner from '../components/SiteProvisioner';
-import StagingArea from '../components/StagingArea';
-import RegistryViewer from '../components/RegistryViewer';
-import NonEntityRegistry from '../components/NonEntityRegistry';
+import StagingAreaNew from '../components/StagingAreaNew';
 import ErrorFallback from '../components/ErrorFallback';
+// NEW: Registry pages
+import EntityRegistry from '../pages/EntityRegistry';
+import NonEntityRegistry from '../pages/NonEntityRegistry';
+import EntityAssignment from '../pages/EntityAssignment';
+import NonEntityAssignment from '../pages/NonEntityAssignment';
+// Old pages (kept for backward compatibility during migration)
 import EntityDetails from '../pages/entities/EntityDetails';
 import EntityEdit from '../pages/entities/EntityEdit';
-import EntityCreate from '../pages/entities/EntityCreate';
 import ZoneDetails from '../pages/geography/ZoneDetails';
 import ZoneEdit from '../pages/geography/ZoneEdit';
 import SiteDetails from '../pages/sites/SiteDetails';
@@ -71,27 +74,33 @@ export const router = createBrowserRouter([
       },
       {
         path: 'staging',
-        element: <StagingArea />,
+        element: <StagingAreaNew />,
+      },
+      // NEW: Entity Registry routes
+      {
+        path: 'entity-registry',
+        element: <EntityRegistry />,
       },
       {
-        path: 'registry',
-        element: <RegistryViewer />,
+        path: 'entity-registry/assign/:stagingId',
+        element: <EntityAssignment />,
       },
       {
-        path: 'registry/create',
-        element: <EntityCreate />,
-      },
-      {
-        path: 'registry/:entityPk',
+        path: 'entity-registry/:entityPk',
         element: <EntityDetails />,
       },
       {
-        path: 'registry/edit/:entityPk',
+        path: 'entity-registry/edit/:entityPk',
         element: <EntityEdit />,
       },
+      // NEW: Non-Entity Registry routes
       {
-        path: 'non-entities',
+        path: 'non-entity-registry',
         element: <NonEntityRegistry />,
+      },
+      {
+        path: 'non-entity-registry/assign/:stagingId',
+        element: <NonEntityAssignment />,
       },
     ],
   },
