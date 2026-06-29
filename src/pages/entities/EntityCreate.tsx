@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus } from 'lucide-react';
@@ -23,7 +18,6 @@ export default function EntityCreate() {
     types
   } = useData();
   
-  // Form state
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [zonePk, setZonePk] = useState('');
@@ -32,7 +26,6 @@ export default function EntityCreate() {
   const [typePk, setTypePk] = useState('');
   const [visibilityType, setVisibilityType] = useState<'Public' | 'Private/Home'>('Public');
   
-  // Error states
   const [nameError, setNameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [zonePkError, setZonePkError] = useState<string | null>(null);
@@ -43,7 +36,6 @@ export default function EntityCreate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate
     const nameValidation = validateRequired(name, 'Entity Name');
     const phoneErr = phone ? validatePhone(phone) : null;
     const zonePkValidation = validateRequired(zonePk, 'Zone PK');
@@ -56,14 +48,12 @@ export default function EntityCreate() {
     
     if (!nameValidation.isValid || phoneErr || !zonePkValidation.isValid || !categoryValidation.isValid) return;
     
-    // Find zone details
     const zone = zoneRefs.find(z => z.zone_pk === zonePk);
     if (!zone) {
       setZonePkError('Invalid zone PK');
       return;
     }
 
-    // Find category details
     const category = categories.find(c => c.pk === categoryPk);
     if (!category) {
       setCategoryError('Invalid category');
@@ -72,8 +62,9 @@ export default function EntityCreate() {
     
     setIsSubmitting(true);
     try {
+      const timestamp = Date.now();
       const newEntity: ActiveEntity = {
-        entity_pk: `ENT-${Date.now()}`,
+        entity_pk: `ENT-${String(timestamp).slice(-6)}`,
         entity_name: name,
         phone: phone || undefined,
         zone_pk: zonePk,
@@ -93,10 +84,11 @@ export default function EntityCreate() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         website_zone_entity_id: null,
+        roles: { isAssetProvider: false, isServiceProvider: true },
       };
       
       await addEntity(newEntity);
-      navigate(`/registry/${newEntity.entity_pk}`);
+      navigate(`/entity-registry/${newEntity.entity_pk}`);
     } catch (error) {
       console.error('Failed to create entity:', error);
       setNameError('Failed to create entity. Please try again.');
@@ -115,24 +107,22 @@ export default function EntityCreate() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-md">
+      <div className="flex items-center gap-4 bg-white p-5 rounded-xl border border-surface-200 shadow-md">
         <Button 
           variant="secondary"
-          onClick={() => navigate('/registry')}
+          onClick={() => navigate('/entity-registry')}
           size="sm"
         >
           <ArrowLeft size={18} />
           Back
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Create New Entity</h1>
-          <p className="text-sm text-slate-600">Add a new entity to the registry</p>
+          <h1 className="text-2xl font-bold text-surface-900">Create New Entity</h1>
+          <p className="text-sm text-surface-500">Add a new entity to the registry</p>
         </div>
       </div>
 
-      {/* Form */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-md">
+      <div className="bg-white p-6 rounded-xl border border-surface-200 shadow-md">
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             label="Entity Name"
@@ -152,7 +142,7 @@ export default function EntityCreate() {
           />
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-surface-700 mb-2">
               Zone / Location <span className="text-red-500">*</span>
             </label>
             <select
@@ -161,7 +151,7 @@ export default function EntityCreate() {
               className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
                 zonePkError 
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-                  : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
+                  : 'border-surface-300 focus:border-brand-500 focus:ring-brand-200'
               }`}
               required
             >
@@ -178,7 +168,7 @@ export default function EntityCreate() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-surface-700 mb-2">
               Primary Domain <span className="text-red-500">*</span>
             </label>
             <select
@@ -188,7 +178,7 @@ export default function EntityCreate() {
                 setCategoryPk('');
                 setTypePk('');
               }}
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-200"
+              className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-200"
               required
             >
               {domains.filter(d => d.status === 'active').map(domain => (
@@ -200,7 +190,7 @@ export default function EntityCreate() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-surface-700 mb-2">
               Category <span className="text-red-500">*</span>
             </label>
             <select
@@ -213,7 +203,7 @@ export default function EntityCreate() {
               className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
                 categoryError 
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-                  : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
+                  : 'border-surface-300 focus:border-brand-500 focus:ring-brand-200'
               }`}
               required
             >
@@ -228,19 +218,19 @@ export default function EntityCreate() {
               <p className="mt-1 text-xs text-red-600">{categoryError}</p>
             )}
             {filteredCategories.length === 0 && (
-              <p className="mt-1 text-xs text-slate-500">Select a domain first</p>
+              <p className="mt-1 text-xs text-surface-500">Select a domain first</p>
             )}
           </div>
 
           {filteredTypes.length > 0 && (
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-semibold text-surface-700 mb-2">
                 Type (Optional)
               </label>
               <select
                 value={typePk}
                 onChange={(e) => setTypePk(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-200"
+                className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-200"
               >
                 <option value="">Select type (optional)...</option>
                 {filteredTypes.map(type => (
@@ -253,13 +243,13 @@ export default function EntityCreate() {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-surface-700 mb-2">
               Visibility Type <span className="text-red-500">*</span>
             </label>
             <select
               value={visibilityType}
               onChange={(e) => setVisibilityType(e.target.value as 'Public' | 'Private/Home')}
-              className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-200"
+              className="w-full px-4 py-2.5 border border-surface-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-200"
               required
             >
               <option value="Public">Public</option>
@@ -267,11 +257,11 @@ export default function EntityCreate() {
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-surface-200">
             <Button
               type="button"
               variant="secondary"
-              onClick={() => navigate('/registry')}
+              onClick={() => navigate('/entity-registry')}
             >
               Cancel
             </Button>

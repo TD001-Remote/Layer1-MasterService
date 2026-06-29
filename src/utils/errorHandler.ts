@@ -21,8 +21,14 @@ export class APIError extends Error {
 /**
  * Handle Firebase/Firestore errors
  */
+const sanitizeForLog = (value: any): string => {
+  if (typeof value === 'string') return value.replace(/[\r\n]/g, ' ');
+  if (value instanceof Error) return value.message.replace(/[\r\n]/g, ' ');
+  return String(value).replace(/[\r\n]/g, ' ');
+};
+
 export const handleFirebaseError = (error: any): AppError => {
-  console.error('Firebase Error:', error);
+  console.error('Firebase Error:', sanitizeForLog(error));
 
   // Firebase Auth errors
   if (error.code) {
@@ -68,13 +74,10 @@ export const handleFirebaseError = (error: any): AppError => {
  * Log errors to console with context
  */
 export const logError = (context: string, error: any, additionalInfo?: any) => {
-  console.group(`❌ Error in ${context}`);
-  console.error('Error:', error);
-  if (error.stack) {
-    console.error('Stack:', error.stack);
-  }
+  console.group(`❌ Error in ${sanitizeForLog(context)}`);
+  console.error('Error:', sanitizeForLog(error));
   if (additionalInfo) {
-    console.log('Additional Info:', additionalInfo);
+    console.log('Additional Info:', sanitizeForLog(additionalInfo));
   }
   console.groupEnd();
 };

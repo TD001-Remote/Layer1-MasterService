@@ -52,8 +52,8 @@ export default function EntityEdit() {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Entity Not Found</h3>
-          <Button onClick={() => navigate('/registry')}>
+          <h3 className="text-lg font-semibold text-surface-900 mb-2">Entity Not Found</h3>
+          <Button onClick={() => navigate('/entity-registry')}>
             Back to Registry
           </Button>
         </div>
@@ -107,7 +107,7 @@ export default function EntityEdit() {
       };
       
       await updateEntity(updatedEntity);
-      navigate(`/registry/${entity.entity_pk}`);
+      navigate(`/entity-registry/${entity.entity_pk}`);
     } catch (error) {
       console.error('Failed to update entity:', error);
       setNameError('Failed to update entity. Please try again.');
@@ -131,14 +131,14 @@ export default function EntityEdit() {
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(`/registry/${entity.entity_pk}`)}
+            onClick={() => navigate(`/entity-registry/${entity.entity_pk}`)}
             className="px-2"
           >
             <ArrowLeft size={20} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Entity</h1>
-            <p className="text-sm text-gray-500">{entity.entity_pk}</p>
+            <h1 className="text-2xl font-bold text-surface-900">Edit Entity</h1>
+            <p className="text-sm text-surface-500">{entity.entity_pk}</p>
           </div>
         </div>
 
@@ -239,7 +239,7 @@ export default function EntityEdit() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => navigate(`/registry/${entity.entity_pk}`)}
+          onClick={() => navigate(`/entity-registry/${entity.entity_pk}`)}
               >
                 Cancel
               </Button>

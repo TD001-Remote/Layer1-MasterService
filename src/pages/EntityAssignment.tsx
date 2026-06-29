@@ -8,25 +8,31 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Building2, MapPin, FolderTree } from "lucide-react";
 import { GeoData, BranchHierarchy } from "../types";
 import { getAllEntityDomains, getEntityCategoryById } from "../data/domains";
+import { useData } from "../contexts/DataContext";
 
 export default function EntityAssignment() {
   const { stagingId } = useParams<{ stagingId: string }>();
   const navigate = useNavigate();
   
-  // Mock staging entity data - would come from DataContext
-  const stagingEntity = {
-    id: stagingId || '',
-    entity_name: 'Sample Hospital',
-    phone: '9876543210',
-    domain_code: 'HLT-SRV',
-    category_id: 'CAT-HLTSRV-003',
-    roles: {
-      isAssetProvider: true,
-      isServiceProvider: true
-    }
-  };
+  // Use DataContext
+  const { getStagingEntities, assignEntityToRegistry, zoneRefs } = useData();
+  
+  // Get staging entity
+  const stagingEntity = getStagingEntities().find(e => e.id === stagingId);
+  
+  if (!stagingEntity) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">Staging entity not found</p>
+        <button onClick={() => navigate('/entity-registry')} className="mt-4 text-indigo-600">
+          Back to Registry
+        </button>
+      </div>
+    );
+  }
 
-  const categoryInfo = getEntityCategoryById(stagingEntity.category_id);
+  // Get domain/category info from staging entity
+  const categoryInfo = stagingEntity.category_id ? getEntityCategoryById(stagingEntity.category_id) : undefined;
   const domains = getAllEntityDomains();
 
   // Geo form state
@@ -39,9 +45,9 @@ export default function EntityAssignment() {
   const [substreetId, setSubstreetId] = useState('');
   const [zonePk, setZonePk] = useState('');
 
-  // Branch form state
-  const [domain, setDomain] = useState(stagingEntity.domain_code);
-  const [category, setCategory] = useState(stagingEntity.category_id);
+  // Branch form state - initialize from staging or empty
+  const [domain, setDomain] = useState(categoryInfo?.domain.code || '');
+  const [category, setCategory] = useState(stagingEntity.category_id || '');
   const [type, setType] = useState('');
 
   // Mock geo data - would come from DataContext
@@ -65,12 +71,18 @@ export default function EntityAssignment() {
     { zone_pk: 'ZON-TN-MAY-SIR-CITY1-AREA1-STR2', fullAddress: 'Sirkazhi Town, North Ward, South Car Street' }
   ];
 
-  const getCategories = () => {
-    const selectedDomain = domains.find(d => d.code === domain);
-    return selectedDomain?.categories || [];
+  const handleDomainChange = (domainCode: string) => {
+    setDomain(domainCode);
+    setCategory(''); // Reset category when domain changes
+    setType('');
   };
 
-  const handleSave = () => {
+  const handleCategoryChange = (categoryId: string) => {
+    setCategory(categoryId);
+    setType(''); // Reset type when category changes
+  };
+
+  const handleSave = async () => {
     // Validate required fields
     if (!stateId || !districtId || !talukId || !zonePk) {
       alert('Please fill all required geo fields: State, District, Taluk, and Zone PK');
@@ -99,15 +111,12 @@ export default function EntityAssignment() {
       type: type || undefined
     };
 
-    console.log('Assigning entity:', {
-      stagingId,
-      geoData,
-      hierarchy
-    });
-
-    // Would call DataContext method to move from staging to registry
-    alert('Entity assigned to registry! (Mock - will integrate with DataContext)');
-    navigate('/entity-registry');
+    try {
+      await assignEntityToRegistry(stagingId!, geoData, hierarchy);
+      navigate('/entity-registry');
+    } catch (err) {
+      console.error('Assignment failed:', err);
+    }
   };
 
   return (
@@ -281,7 +290,7 @@ export default function EntityAssignment() {
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
               <FolderTree className="w-5 h-5 text-indigo-600" />
-              Branch Hierarchy
+              Branch Hierarchy (Domain → Category → Type)
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -291,11 +300,7 @@ export default function EntityAssignment() {
                 </label>
                 <select
                   value={domain}
-                  onChange={(e) => {
-                    setDomain(e.target.value);
-                    setCategory('');
-                    setType('');
-                  }}
+                  onChange={(e) => handleDomainChange(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">Select Domain</option>
@@ -311,15 +316,12 @@ export default function EntityAssignment() {
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    setType('');
-                  }}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                   disabled={!domain}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-100"
                 >
                   <option value="">Select Category</option>
-                  {getCategories().map(cat => (
+                  {domains.find(d => d.code === domain)?.categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
@@ -327,7 +329,7 @@ export default function EntityAssignment() {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Type (Optional)
+                  Type (Optional - for sub-branching)
                 </label>
                 <input
                   type="text"
@@ -337,16 +339,16 @@ export default function EntityAssignment() {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Leave empty to place directly under category. Add type for deeper branching.
+                  Leave empty to place directly under category. Add type for deeper branching/organization.
                 </p>
               </div>
             </div>
 
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-800">
-                <strong>Storage Path:</strong> {' '}
+            <div className="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <p className="text-xs text-indigo-800">
+                <strong>Storage Path Preview:</strong><br />
                 {domain && category ? (
-                  <code className="font-mono text-xs">
+                  <code className="font-mono text-xs mt-1 block">
                     entity-registry/domains/{domain}/categories/{category}
                     {type ? `/types/${type}` : ''}/entity/&#123;entity_pk&#125;
                   </code>

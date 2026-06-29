@@ -19,7 +19,7 @@ export const taxonomyApi = {
 
   async seedDomains(seedData: RegistryDomain[]): Promise<RegistryDomain[]> {
     try {
-      return await seedCollectionIfEmpty<RegistryDomain>('domains', seedData, 'code');
+      return await seedCollectionIfEmpty<RegistryDomain>('domains', seedData, 'dctId');
     } catch (error) {
       return handleApiError(error);
     }
@@ -27,7 +27,7 @@ export const taxonomyApi = {
 
   async createDomain(domain: RegistryDomain): Promise<RegistryDomain> {
     try {
-      await saveDoc('domains', domain.code, domain);
+      await saveDoc('domains', domain.dctId, domain);
       return domain;
     } catch (error) {
       return handleApiError(error);
@@ -36,19 +36,19 @@ export const taxonomyApi = {
 
   async updateDomain(domain: RegistryDomain): Promise<RegistryDomain> {
     try {
-      await saveDoc('domains', domain.code, domain);
+      await saveDoc('domains', domain.dctId, domain);
       return domain;
     } catch (error) {
       return handleApiError(error);
     }
   },
 
-  async updateDomainStatus(code: string, status: 'active' | 'stopped'): Promise<void> {
+  async updateDomainStatus(dctId: string, status: 'active' | 'stopped'): Promise<void> {
     try {
       const domains = await this.getDomains();
-      const domain = domains.find(d => d.code === code);
+      const domain = domains.find(d => d.dctId === dctId);
       if (domain) {
-        await saveDoc('domains', code, { ...domain, status });
+        await saveDoc('domains', dctId, { ...domain, status });
       }
     } catch (error) {
       return handleApiError(error);
@@ -66,7 +66,7 @@ export const taxonomyApi = {
 
   async seedCategories(seedData: RegistryCategory[]): Promise<RegistryCategory[]> {
     try {
-      return await seedCollectionIfEmpty<RegistryCategory>('categories', seedData, 'pk');
+      return await seedCollectionIfEmpty<RegistryCategory>('categories', seedData, 'dctId');
     } catch (error) {
       return handleApiError(error);
     }
@@ -74,7 +74,7 @@ export const taxonomyApi = {
 
   async createCategory(category: RegistryCategory): Promise<RegistryCategory> {
     try {
-      await saveDoc('categories', category.pk, category);
+      await saveDoc('categories', category.dctId, category);
       return category;
     } catch (error) {
       return handleApiError(error);
@@ -83,19 +83,19 @@ export const taxonomyApi = {
 
   async updateCategory(category: RegistryCategory): Promise<RegistryCategory> {
     try {
-      await saveDoc('categories', category.pk, category);
+      await saveDoc('categories', category.dctId, category);
       return category;
     } catch (error) {
       return handleApiError(error);
     }
   },
 
-  async updateCategoryStatus(pk: string, status: 'active' | 'stopped'): Promise<void> {
+  async updateCategoryStatus(dctId: string, status: 'active' | 'stopped'): Promise<void> {
     try {
       const categories = await this.getCategories();
-      const category = categories.find(c => c.pk === pk);
+      const category = categories.find(c => c.dctId === dctId);
       if (category) {
-        await saveDoc('categories', pk, { ...category, status });
+        await saveDoc('categories', dctId, { ...category, status });
       }
     } catch (error) {
       return handleApiError(error);
@@ -113,7 +113,7 @@ export const taxonomyApi = {
 
   async seedTypes(seedData: RegistryType[]): Promise<RegistryType[]> {
     try {
-      return await seedCollectionIfEmpty<RegistryType>('types', seedData, 'pk');
+      return await seedCollectionIfEmpty<RegistryType>('types', seedData, 'dctId');
     } catch (error) {
       return handleApiError(error);
     }
@@ -121,7 +121,7 @@ export const taxonomyApi = {
 
   async createType(type: RegistryType): Promise<RegistryType> {
     try {
-      await saveDoc('types', type.pk, type);
+      await saveDoc('types', type.dctId, type);
       return type;
     } catch (error) {
       return handleApiError(error);
@@ -130,20 +130,47 @@ export const taxonomyApi = {
 
   async updateType(type: RegistryType): Promise<RegistryType> {
     try {
-      await saveDoc('types', type.pk, type);
+      await saveDoc('types', type.dctId, type);
       return type;
     } catch (error) {
       return handleApiError(error);
     }
   },
 
-  async updateTypeStatus(pk: string, status: 'active' | 'stopped'): Promise<void> {
+  async updateTypeStatus(dctId: string, status: 'active' | 'stopped'): Promise<void> {
     try {
       const types = await this.getTypes();
-      const type = types.find(t => t.pk === pk);
+      const type = types.find(t => t.dctId === dctId);
       if (type) {
-        await saveDoc('types', pk, { ...type, status });
+        await saveDoc('types', dctId, { ...type, status });
       }
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
+
+  async deleteDomain(dctId: string): Promise<void> {
+    try {
+      const { deleteDocById } = await import('../../lib/firebase');
+      await deleteDocById('domains', dctId);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
+
+  async deleteCategory(dctId: string): Promise<void> {
+    try {
+      const { deleteDocById } = await import('../../lib/firebase');
+      await deleteDocById('categories', dctId);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
+
+  async deleteType(dctId: string): Promise<void> {
+    try {
+      const { deleteDocById } = await import('../../lib/firebase');
+      await deleteDocById('types', dctId);
     } catch (error) {
       return handleApiError(error);
     }

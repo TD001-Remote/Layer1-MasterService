@@ -93,13 +93,15 @@ export const validatePositiveNumber = (value: string | number, fieldName: string
   return { isValid: true };
 };
 
-export const validatePassword = (password: string): string | null => {
-  if (!password || password.trim() === '') {
+const MIN_PASSWORD_LENGTH = 6;
+
+export const validatePassword = (value: string): string | null => {
+  if (!value || value.trim() === '') {
     return 'Password is required';
   }
   
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters';
+  if (value.length < MIN_PASSWORD_LENGTH) {
+    return `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
   }
   
   return null;

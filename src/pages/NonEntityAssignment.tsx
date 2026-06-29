@@ -8,22 +8,33 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, MapPin, FolderTree } from "lucide-react";
 import { GeoData, BranchHierarchy } from "../types";
 import { getAllNonEntityDomains, getNonEntityCategoryById } from "../data/domains";
+import { useData } from "../contexts/DataContext";
 
 export default function NonEntityAssignment() {
   const { stagingId } = useParams<{ stagingId: string }>();
   const navigate = useNavigate();
   
-  // Mock staging non-entity data - would come from DataContext
-  const stagingNonEntity = {
-    id: stagingId || '',
-    non_entity_name: 'Sample Shop Building',
-    domain_code: 'RE-COM',
-    category_id: 'CAT-RECOM-001'
-  };
-
-  const categoryInfo = getNonEntityCategoryById(stagingNonEntity.category_id);
+  // Use DataContext
+  const { getStagingNonEntities, assignNonEntityToRegistry, zoneRefs } = useData();
+  
+  // Get staging non-entity
+  const stagingNonEntity = getStagingNonEntities().find(ne => ne.id === stagingId);
+  
+  if (!stagingNonEntity) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">Staging non-entity not found</p>
+        <button onClick={() => navigate('/non-entity-registry')} className="mt-4 text-emerald-600">
+          Back to Registry
+        </button>
+      </div>
+    );
+  }
+  
+  // Get domain/category info from staging non-entity
+  const categoryInfo = stagingNonEntity.category_id ? getNonEntityCategoryById(stagingNonEntity.category_id) : undefined;
   const domains = getAllNonEntityDomains();
-
+  
   // Geo form state
   const [stateId, setStateId] = useState('');
   const [districtId, setDistrictId] = useState('');
@@ -33,50 +44,56 @@ export default function NonEntityAssignment() {
   const [streetId, setStreetId] = useState('');
   const [substreetId, setSubstreetId] = useState('');
   const [zonePk, setZonePk] = useState('');
-
-  // Branch form state
-  const [domain, setDomain] = useState(stagingNonEntity.domain_code);
-  const [category, setCategory] = useState(stagingNonEntity.category_id);
+  
+  // Branch form state - initialize from staging or empty
+  const [domain, setDomain] = useState(categoryInfo?.domain.code || '');
+  const [category, setCategory] = useState(stagingNonEntity.category_id || '');
   const [type, setType] = useState('');
-
+  
   // Mock geo data
   const mockStates = [
     { id: 'GEO-TN', name: 'Tamil Nadu' },
     { id: 'GEO-PY', name: 'Puducherry' }
   ];
-
+  
   const mockDistricts = [
     { id: 'GEO-TN-MAY', stateId: 'GEO-TN', name: 'Mayiladuthurai' },
     { id: 'GEO-TN-TJ', stateId: 'GEO-TN', name: 'Thanjavur' }
   ];
-
+  
   const mockTaluks = [
     { id: 'GEO-TN-MAY-SIR', districtId: 'GEO-TN-MAY', name: 'Sirkazhi' },
     { id: 'GEO-TN-MAY-KUT', districtId: 'GEO-TN-MAY', name: 'Kuthalam' }
   ];
-
+  
   const mockZones = [
     { zone_pk: 'ZON-TN-MAY-SIR-CITY1-AREA1-STR1', fullAddress: 'Sirkazhi Town, North Ward, Main Street' },
     { zone_pk: 'ZON-TN-MAY-SIR-CITY1-AREA1-STR2', fullAddress: 'Sirkazhi Town, North Ward, South Car Street' }
   ];
-
-  const getCategories = () => {
-    const selectedDomain = domains.find(d => d.code === domain);
-    return selectedDomain?.categories || [];
+  
+  const handleDomainChange = (domainCode: string) => {
+    setDomain(domainCode);
+    setCategory(''); // Reset category when domain changes
+    setType('');
   };
-
-  const handleSave = () => {
+  
+  const handleCategoryChange = (categoryId: string) => {
+    setCategory(categoryId);
+    setType(''); // Reset type when category changes
+  };
+  
+  const handleSave = async () => {
     // Validate required fields (only state/district/taluk required for non-entities)
     if (!stateId || !districtId || !talukId) {
       alert('Please fill required geo fields: State, District, and Taluk');
       return;
     }
-
+  
     if (!domain || !category) {
       alert('Please select Domain and Category');
       return;
     }
-
+  
     const geoData: GeoData = {
       stateId,
       districtId,
@@ -87,24 +104,21 @@ export default function NonEntityAssignment() {
       substreetId: substreetId || undefined,
       zone_pk: zonePk || undefined // Optional for non-entities
     };
-
+  
     const hierarchy: BranchHierarchy = {
       domain,
       category,
       type: type || undefined
     };
-
-    console.log('Assigning non-entity:', {
-      stagingId,
-      geoData,
-      hierarchy
-    });
-
-    // Would call DataContext method to move from staging to registry
-    alert('Non-Entity assigned to registry! (Mock - will integrate with DataContext)');
-    navigate('/non-entity-registry');
+  
+    try {
+      await assignNonEntityToRegistry(stagingId!, geoData, hierarchy);
+      navigate('/non-entity-registry');
+    } catch (err) {
+      console.error('Assignment failed:', err);
+    }
   };
-
+  
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -118,11 +132,11 @@ export default function NonEntityAssignment() {
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Assign Geo to Non-Entity</h2>
           <p className="text-sm text-slate-600 mt-1">
-            Assign geographic location and branch hierarchy to approved physical asset
+            Assign geographic location and branch hierarchy to approved non-entity
           </p>
         </div>
       </div>
-
+  
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Non-Entity Info */}
         <div className="lg:col-span-1">
@@ -131,7 +145,7 @@ export default function NonEntityAssignment() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-slate-500 font-medium">Asset Name</label>
+                <label className="text-xs text-slate-500 font-medium">Non-Entity Name</label>
                 <p className="text-sm font-bold text-slate-900 mt-1">{stagingNonEntity.non_entity_name}</p>
               </div>
               
@@ -147,11 +161,11 @@ export default function NonEntityAssignment() {
               
               <div className="p-3 bg-slate-100 rounded-lg">
                 <p className="text-xs text-slate-700">
-                  <strong>Type:</strong> Physical Asset (Non-Entity)
+                  <strong>Type:</strong> Non-Entity
                 </p>
               </div>
             </div>
-
+  
             <div className="mt-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
               <p className="text-xs text-emerald-800 font-medium">
                 <strong>Note:</strong> Zone PK is optional for non-entities. Only State/District/Taluk required.
@@ -159,7 +173,7 @@ export default function NonEntityAssignment() {
             </div>
           </div>
         </div>
-
+  
         {/* Right: Assignment Forms */}
         <div className="lg:col-span-2 space-y-6">
           {/* Geographic Assignment */}
@@ -189,7 +203,7 @@ export default function NonEntityAssignment() {
                   ))}
                 </select>
               </div>
-
+  
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   District <span className="text-red-500">*</span>
@@ -211,7 +225,7 @@ export default function NonEntityAssignment() {
                     ))}
                 </select>
               </div>
-
+  
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Taluk <span className="text-red-500">*</span>
@@ -230,7 +244,7 @@ export default function NonEntityAssignment() {
                     ))}
                 </select>
               </div>
-
+  
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Zone PK (Optional)
@@ -254,12 +268,12 @@ export default function NonEntityAssignment() {
               </div>
             </div>
           </div>
-
+  
           {/* Branch Hierarchy */}
           <div className="bg-white rounded-xl border border-slate-200 p-6">
             <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
               <FolderTree className="w-5 h-5 text-emerald-600" />
-              Branch Hierarchy
+              Branch Hierarchy (Domain → Category → Type)
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -269,11 +283,7 @@ export default function NonEntityAssignment() {
                 </label>
                 <select
                   value={domain}
-                  onChange={(e) => {
-                    setDomain(e.target.value);
-                    setCategory('');
-                    setType('');
-                  }}
+                  onChange={(e) => handleDomainChange(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="">Select Domain</option>
@@ -282,49 +292,46 @@ export default function NonEntityAssignment() {
                   ))}
                 </select>
               </div>
-
+  
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    setType('');
-                  }}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                   disabled={!domain}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100"
                 >
                   <option value="">Select Category</option>
-                  {getCategories().map(cat => (
+                  {domains.find(d => d.code === domain)?.categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
               </div>
-
+  
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Type (Optional)
+                  Type (Optional - for sub-branching)
                 </label>
                 <input
                   type="text"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  placeholder="e.g., Corner Shop, Ground Floor (optional for branching)"
+                  placeholder="e.g., Corner Shop, Ground Floor, Type-A (optional)"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Leave empty to place directly under category. Add type for deeper branching.
+                  Leave empty to place directly under category. Add type for deeper branching/organization.
                 </p>
               </div>
             </div>
-
+  
             <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
               <p className="text-xs text-emerald-800">
-                <strong>Storage Path:</strong> {' '}
+                <strong>Storage Path Preview:</strong><br />
                 {domain && category ? (
-                  <code className="font-mono text-xs">
+                  <code className="font-mono text-xs mt-1 block">
                     non-entity-registry/domains/{domain}/categories/{category}
                     {type ? `/types/${type}` : ''}/non-entity/&#123;non_entity_pk&#125;
                   </code>
@@ -334,7 +341,7 @@ export default function NonEntityAssignment() {
               </p>
             </div>
           </div>
-
+  
           {/* Action Buttons */}
           <div className="flex justify-end gap-3">
             <button

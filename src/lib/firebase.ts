@@ -11,23 +11,25 @@ import {
   writeBatch 
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import config from "../../firebase-applet-config.json";
-import { ZoneRef, Street, Area, CityVillage, SubStreet, GeoTaluk } from "../types";
+import { ZoneRef, Street, Area, CityVillage, SubStreet, GeoTaluk, GeoDistrict } from "../types";
+
+// Firebase config from environment variables
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
+};
 
 // Initialize Firebase App
-const app = initializeApp({
-  apiKey: config.apiKey,
-  authDomain: config.authDomain,
-  projectId: config.projectId,
-  storageBucket: config.storageBucket,
-  messagingSenderId: config.messagingSenderId,
-  appId: config.appId
-});
+const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore database using the custom firestoreDatabaseId if provided
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}),
-}, config.firestoreDatabaseId || undefined);
+});
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
@@ -45,7 +47,7 @@ export async function fetchCollection<T>(collectionName: string): Promise<T[]> {
     });
     return items;
   } catch (error) {
-    console.error(`Firebase fetchCollection error for ${collectionName}:`, error);
+    console.error(`Firebase fetchCollection error for ${collectionName.replace(/[\r\n]/g, ' ')}:`, String(error).replace(/[\r\n]/g, ' '));
     return [];
   }
 }
@@ -58,7 +60,7 @@ export async function saveDoc(collectionName: string, docId: string, data: any):
     const docRef = doc(db, collectionName, docId);
     await setDoc(docRef, data, { merge: true });
   } catch (error) {
-    console.error(`Firebase saveDoc error for ${collectionName}/${docId}:`, error);
+    console.error(`Firebase saveDoc error for ${collectionName.replace(/[\r\n]/g, ' ')}/${docId.replace(/[\r\n]/g, ' ')}:`, String(error).replace(/[\r\n]/g, ' '));
     throw error;
   }
 }
@@ -71,7 +73,7 @@ export async function deleteDocById(collectionName: string, docId: string): Prom
     const docRef = doc(db, collectionName, docId);
     await deleteDoc(docRef);
   } catch (error) {
-    console.error(`Firebase deleteDocById error for ${collectionName}/${docId}:`, error);
+    console.error(`Firebase deleteDocById error for ${collectionName.replace(/[\r\n]/g, ' ')}/${docId.replace(/[\r\n]/g, ' ')}:`, String(error).replace(/[\r\n]/g, ' '));
     throw error;
   }
 }
@@ -91,7 +93,7 @@ export async function seedCollectionIfEmpty<T extends Record<string, any>>(
     }
 
     // Collection is empty, seed it!
-    console.log(`Seeding empty collection is triggered for: ${collectionName}`);
+    console.log(`Seeding empty collection is triggered for: ${collectionName.replace(/[\r\n]/g, ' ')}`);
     const batch = writeBatch(db);
     
     // Firestore batch limit is 500 writes
@@ -114,7 +116,7 @@ export async function seedCollectionIfEmpty<T extends Record<string, any>>(
     
     return seedData;
   } catch (error) {
-    console.error(`Firebase seeding error for ${collectionName}:`, error);
+    console.error(`Firebase seeding error for ${collectionName.replace(/[\r\n]/g, ' ')}:`, String(error).replace(/[\r\n]/g, ' '));
     return seedData;
   }
 }
@@ -127,9 +129,14 @@ export function buildDynamicZoneRefs(
   areas: Area[],
   cities: CityVillage[],
   substreets: SubStreet[],
-  taluks: GeoTaluk[]
+  taluks: GeoTaluk[],
+  districts: GeoDistrict[]
 ): ZoneRef[] {
   const refs: ZoneRef[] = [];
+  
+  // Build a lookup map for districts
+  const districtMap = new Map<string, GeoDistrict>();
+  districts.forEach(d => districtMap.set(d.id, d));
   
   for (const s of streets) {
     const a = areas.find(x => x.id === s.areaId);
@@ -146,18 +153,15 @@ export function buildDynamicZoneRefs(
     
     const street_pk = `ZON-${cvIdSuffix}-${aIdSuffix}-${sIdSuffix}`;
     
-    // Resolve location info dynamically
+    // Resolve location info dynamically from actual district data
+    const district = districtMap.get(t.districtId);
     const stateSuffix = t.id.includes("-PY") || cv.id.includes("-PY") ? "Puducherry UT" : "Tamil Nadu, India";
-    const distSuffix = cv.name.toLowerCase().includes("karaikal") || cv.name.toLowerCase().includes("pondicherry") 
-      ? "Puducherry Region" 
-      : t.name.toLowerCase().includes("sirkazhi") || t.name.toLowerCase().includes("mayiladuthurai")
-        ? "Mayiladuthurai District"
-        : "Tamil speaking region";
+    const distSuffix = district?.name || "Unknown District";
 
     refs.push({
       zone_pk: street_pk,
       stateId: t.id.includes("-PY") ? "GEO-PY" : "GEO-TN",
-      districtId: t.id.includes("-PY") ? "GEO-PY-KAR" : "GEO-TN-MAY",
+      districtId: t.districtId,
       talukId: t.id,
       cityVillageId: cv.id,
       areaId: a.id,
@@ -173,7 +177,7 @@ export function buildDynamicZoneRefs(
       refs.push({
         zone_pk: sub_pk,
         stateId: t.id.includes("-PY") ? "GEO-PY" : "GEO-TN",
-        districtId: t.id.includes("-PY") ? "GEO-PY-KAR" : "GEO-TN-MAY",
+        districtId: t.districtId,
         talukId: t.id,
         cityVillageId: cv.id,
         areaId: a.id,

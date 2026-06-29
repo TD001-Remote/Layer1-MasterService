@@ -53,28 +53,28 @@ export function Modal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-surface-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white rounded-2xl shadow-xl transform transition-all`}
+          className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl transform transition-all border border-surface-200 animate-fade-in-up`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-surface-200">
               {title && (
-                <h3 className="text-lg font-bold text-slate-900 font-display">
+                <h3 className="text-lg font-extrabold text-surface-900 font-display tracking-tight">
                   {title}
                 </h3>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100"
+                  className="p-1.5 text-surface-400 hover:text-surface-600 hover:bg-surface-100 transition-colors rounded-lg"
                 >
                   <X size={20} />
                 </button>
@@ -83,7 +83,7 @@ export function Modal({
           )}
 
           {/* Content */}
-          <div className="px-6 py-4">
+          <div className="px-6 py-5">
             {children}
           </div>
         </div>

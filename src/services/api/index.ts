@@ -10,3 +10,4 @@ export * from './entityApi';
 export * from './pendingApi';
 export * from './nonEntityApi';
 export * from './taxonomyApi';
+export * from './personApi';

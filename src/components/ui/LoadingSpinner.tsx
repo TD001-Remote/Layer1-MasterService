@@ -11,6 +11,7 @@ interface LoadingSpinnerProps {
   text?: string;
   fullScreen?: boolean;
   className?: string;
+  color?: string;
 }
 
 export function LoadingSpinner({
@@ -18,12 +19,16 @@ export function LoadingSpinner({
   text,
   fullScreen = false,
   className = '',
+  color = 'text-brand-600',
 }: LoadingSpinnerProps) {
   const spinner = (
-    <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
-      <Loader2 size={size} className="animate-spin text-indigo-600" />
+    <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
+      <div className="relative">
+        <Loader2 size={size} className={`animate-spin ${color}`} />
+        <div className="absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle,rgba(20,184,166,0.15) 0%,transparent 70%)' }} />
+      </div>
       {text && (
-        <p className="text-sm font-medium text-slate-600">{text}</p>
+        <p className="text-sm font-extrabold text-surface-600 tracking-wide">{text}</p>
       )}
     </div>
   );

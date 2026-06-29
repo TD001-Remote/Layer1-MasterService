@@ -58,32 +58,92 @@ export interface ZoneRef {
   fullAddress: string;
 }
 
-// Site schema for dynamic website generation
+// Site schema — L1 stores primary/ID data only
 export interface SetSite {
-  site_id: string; // e.g. "SITE-001"
-  title: string;
-  subdomain: string; // e.g. "sirkazhi-north"
-  description: string;
-  themeColor: string; // hex or Tailwind color class
-  primaryDomain: string; // e.g. "TOU"
-  zoneIds: string[]; // List of mapped Zone IDs containing addresses
+  site_id: string;      // e.g. "SITE-001"
+  title: string;        // Display name
+  subdomain: string;    // e.g. "sirkazhi-north"
+  zoneIds: string[];    // Assigned Zone PKs
   status: "active" | "draft";
-  logoUrl?: string;
+}
+
+export type DCTChangeAction = "edit" | "modify" | "delete" | "split" | "convert" | "merge";
+
+export type UserRole = "admin" | "master-admin";
+
+export type PendingDctStatus = "pending" | "approved" | "rejected";
+
+export interface PendingDctChange {
+  id: string;
+  action: DCTChangeAction;
+  dctType: "domain" | "category" | "type";
+  dctId: string;
+  oldValue: string;
+  newValue: string;
+  description: string;
+  submittedBy: string;
+  submittedAt: string;
+  status: PendingDctStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+}
+
+export interface DCTChangeRecord {
+  id: string;
+  timestamp: string;
+  action: DCTChangeAction;
+  dctType: "domain" | "category" | "type";
+  dctId: string;
+  oldValue: string;
+  newValue: string;
+  description: string;
+  performedBy: string;
+  redirects?: {
+    entityCount: number;
+    nonEntityCount: number;
+    targetDctId?: string;
+  };
+}
+
+export interface DCTArchiveRecord {
+  id: string;
+  dctType: "domain" | "category" | "type";
+  dctId: string;
+  originalCode?: string;
+  originalPk?: string;
+  originalName: string;
+  archivedAt: string;
+  archivedBy: string;
+  entityCount: number;
+  nonEntityCount: number;
+  redirectedTo?: string;
 }
 
 // The 11 core domains
 export type DomainCode = string;
 
+export interface Category {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export interface RegistryDomain {
+  dctId: string;
+  pk?: string;
   code: string;
   name: string;
   description: string;
   color: string;
   icon: string;
   status?: "active" | "stopped";
+  entityType?: "entity" | "non-entity";
+  categories?: Category[];
 }
 
 export interface RegistryCategory {
+  dctId: string;
   pk: string; // e.g. "CAT-MED-101"
   domainCode: string;
   name: string; // e.g. "Hospitals & Diagnostics"
@@ -92,6 +152,7 @@ export interface RegistryCategory {
 }
 
 export interface RegistryType {
+  dctId: string;
   pk: string; // e.g. "TYP-MED-101-01"
   categoryPk: string;
   name: string; // e.g. "Government Taluk Hospital"
@@ -99,35 +160,53 @@ export interface RegistryType {
   status?: "active" | "stopped";
 }
 
-// Non-Entity / Activity Non-Entity in L1 DB
+// Non-Entity in L1 DB
 export interface NonEntity {
   non_entity_pk: string; // NENT-XXXXXX
   non_entity_name: string;
   stateId: string;
   districtId: string;
   talukId: string;
-  cityVillageId?: string; // Optional for non-entities
-  areaId?: string; // Optional for non-entities
-  streetId?: string; // Optional for non-entities
+  cityVillageId?: string;
+  areaId?: string;
+  streetId?: string;
   substreetId?: string | null;
-  zone_pk?: string; // Optional for non-entities
+  zone_pk?: string;
   primary_domain: string;
   secondary_domains: string[];
   category_pk: string;
   category_name: string;
-  type_pk?: string; // Optional type for hierarchical branching
-  phone?: string; // Optional phone number
+  type_pk?: string;
+  phone?: string;
   visibility_type: "Public" | "Private/Home";
   status: "active" | "stopped";
   createdAt: string;
   updatedAt: string;
   website_zone_entity_id?: string | null;
-  // NEW: Entity linking for asset relationships
+  role: NonEntityRole;
   linkedEntities: {
-    assetProvider?: string; // Entity ID (owner)
-    serviceProvider?: string; // Entity ID (operator)
+    assetProvider?: string;
+    serviceProvider?: string;
   };
 }
+
+// Entity role — what kind of provider the entity is (pick one)
+export type EntityRole =
+  | 'physical-asset-provider'
+  | 'physical-service-provider'
+  | 'physical-goods-provider'
+  | 'non-physical-asset-provider'
+  | 'non-physical-service-provider'
+  | 'non-physical-goods-provider';
+
+// Non-entity role — what kind of asset/item the non-entity is (pick one)
+export type NonEntityRole =
+  | 'physical-asset'
+  | 'physical-service'
+  | 'physical-goods'
+  | 'non-physical-asset'
+  | 'non-physical-service'
+  | 'non-physical-goods';
 
 // Active entity in the L1 Database
 export interface ActiveEntity {
@@ -152,11 +231,7 @@ export interface ActiveEntity {
   createdAt: string;
   updatedAt: string;
   website_zone_entity_id?: string | null; // Associated Website Zone/Site ID
-  // NEW: Entity roles for asset/service provider distinction
-  roles: {
-    isAssetProvider: boolean;
-    isServiceProvider: boolean;
-  };
+  role: EntityRole;
   linkedAssets?: string[]; // IDs of non-entities (assets) this entity owns/operates
 }
 
@@ -205,28 +280,24 @@ export interface MasterCompareRecord {
 // ============================================================
 
 export interface StagingEntity {
-  id: string; // Temporary staging ID
+  id: string;
   entity_name: string;
   phone?: string;
-  domain_code: string; // NEW: from domains.ts (e.g., BUS-FOD)
-  category_id: string; // NEW: from domains.ts (e.g., CAT-BUSFOD-001)
-  roles: {
-    isAssetProvider: boolean;
-    isServiceProvider: boolean;
-  };
+  domain_code: string;
+  category_id: string;
+  role: EntityRole;
   status: 'pending' | 'approved' | 'rejected';
   uploadedAt: string;
-  // NO geo/zone fields in staging!
 }
 
 export interface StagingNonEntity {
-  id: string; // Temporary staging ID
+  id: string;
   non_entity_name: string;
-  domain_code: string; // NEW: from domains.ts (e.g., RE-COM)
-  category_id: string; // NEW: from domains.ts (e.g., CAT-RECOM-001)
+  domain_code: string;
+  category_id: string;
+  role: NonEntityRole;
   status: 'pending' | 'approved' | 'rejected';
   uploadedAt: string;
-  // NO geo/zone fields in staging!
 }
 
 // ============================================================
@@ -234,8 +305,8 @@ export interface StagingNonEntity {
 // ============================================================
 
 export interface RegistryEntity extends Omit<StagingEntity, 'id' | 'uploadedAt'> {
-  entity_pk: string; // Final ENT-XXXXXX ID
-  zone_pk: string; // Required for entities
+  entity_pk: string;
+  zone_pk: string;
   stateId: string;
   districtId: string;
   talukId: string;
@@ -245,34 +316,39 @@ export interface RegistryEntity extends Omit<StagingEntity, 'id' | 'uploadedAt'>
   substreetId?: string | null;
   assignedAt: string;
   assignedBy: string;
-  // Branch location
   domain: string;
   category: string;
-  type?: string; // Optional hierarchical type
-  linkedAssets?: string[]; // Non-entity IDs
+  type?: string;
+  linkedAssets?: string[];
 }
 
 export interface RegistryNonEntity extends Omit<StagingNonEntity, 'id' | 'uploadedAt'> {
-  non_entity_pk: string; // Final NENT-XXXXXX ID
+  non_entity_pk: string;
   stateId: string;
   districtId: string;
   talukId: string;
-  cityVillageId?: string; // Optional for non-entities
-  areaId?: string; // Optional for non-entities
-  streetId?: string; // Optional for non-entities
+  cityVillageId?: string;
+  areaId?: string;
+  streetId?: string;
   substreetId?: string | null;
-  zone_pk?: string; // Optional for non-entities
+  zone_pk?: string;
   assignedAt: string;
   assignedBy: string;
-  // Branch location
   domain: string;
   category: string;
-  type?: string; // Optional hierarchical type
+  type?: string;
   linkedEntities: {
-    assetProvider?: string; // Entity ID (owner)
-    serviceProvider?: string; // Entity ID (operator)
+    assetProvider?: string;
+    serviceProvider?: string;
   };
 }
+
+// ============================================================
+// BACKWARD COMPATIBILITY ALIASES
+// ============================================================
+export type PhysicalAsset = NonEntity;
+export type StagingPhysicalAsset = StagingNonEntity;
+export type RegistryPhysicalAsset = RegistryNonEntity;
 
 // ============================================================
 // NEW: ASSIGNMENT DATA TYPES
@@ -294,5 +370,33 @@ export interface GeoData {
 export interface BranchHierarchy {
   domain: string;
   category: string;
-  type?: string; // Optional for deeper branching
+  type?: string;
+}
+
+// ============================================================
+// PERSON SYSTEM
+// ============================================================
+
+export interface PersonEntityLink {
+  entity_pk: string;
+  order: number;
+}
+
+export interface PersonStatusLogEntry {
+  status: 'active' | 'stopped';
+  reason: string;
+  changedAt: string;
+  changedBy: string;
+}
+
+export interface Person {
+  person_pk: string;                  // PER-XXXXXX
+  name: string;
+  entities: PersonEntityLink[];       // min 1, ordered
+  non_entities: string[];             // NENT-XXXXXX[], flat, optional
+  parent_person_pk?: string | null;
+  status: 'active' | 'stopped';
+  statusLog: PersonStatusLogEntry[];
+  createdAt: string;
+  assignedBy: string;
 }

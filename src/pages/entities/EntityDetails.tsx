@@ -33,9 +33,9 @@ export default function EntityDetails() {
       <div className="p-6">
         <div className="text-center py-12">
           <AlertTriangle className="mx-auto h-12 w-12 text-amber-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Entity Not Found</h3>
-          <p className="text-gray-600 mb-4">The requested entity could not be found.</p>
-          <Button onClick={() => navigate('/registry')}>
+          <h3 className="text-lg font-semibold text-surface-900 mb-2">Entity Not Found</h3>
+          <p className="text-surface-600 mb-4">The requested entity could not be found.</p>
+          <Button onClick={() => navigate('/entity-registry')}>
             Back to Registry
           </Button>
         </div>
@@ -66,19 +66,18 @@ export default function EntityDetails() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/registry')}
+            onClick={() => navigate('/entity-registry')}
             className="px-2"
           >
             <ArrowLeft size={20} />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{entity.entity_name}</h1>
-            <p className="text-sm text-gray-500">{entity.entity_pk}</p>
+            <h1 className="text-2xl font-bold text-surface-900">{entity.entity_name}</h1>
+            <p className="text-sm text-surface-500">{entity.entity_pk}</p>
           </div>
         </div>
         
@@ -92,7 +91,7 @@ export default function EntityDetails() {
             <>
               <Button 
                 variant="secondary"
-                onClick={() => navigate(`/registry/edit/${entity.entity_pk}`)}
+                onClick={() => navigate(`/entity-registry/edit/${entity.entity_pk}`)}
               >
                 <Edit size={16} className="mr-1" />
                 Edit
@@ -106,92 +105,87 @@ export default function EntityDetails() {
         </div>
       </div>
 
-      {/* Status Badge */}
       <div>
         <Badge variant={isStopped ? 'danger' : 'success'}>
           {isStopped ? 'Stopped' : 'Active'}
         </Badge>
       </div>
 
-      {/* Main Info Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Basic Information */}
         <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <h2 className="text-lg font-semibold text-surface-900 mb-4">Basic Information</h2>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Entity Name</dt>
-              <dd className="text-sm text-gray-900 mt-1">{entity.entity_name}</dd>
+              <dt className="text-sm font-medium text-surface-500">Entity Name</dt>
+              <dd className="text-sm text-surface-900 mt-1">{entity.entity_name}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Entity PK</dt>
-              <dd className="text-sm text-gray-900 mt-1 font-mono">{entity.entity_pk}</dd>
+              <dt className="text-sm font-medium text-surface-500">Entity PK</dt>
+              <dd className="text-sm text-surface-900 mt-1 font-mono">{entity.entity_pk}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500 flex items-center gap-1">
+              <dt className="text-sm font-medium text-surface-500 flex items-center gap-1">
                 <Phone size={14} />
                 Phone
               </dt>
-              <dd className="text-sm text-gray-900 mt-1">{entity.phone || 'Not provided'}</dd>
+              <dd className="text-sm text-surface-900 mt-1">{entity.phone || 'Not provided'}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Visibility</dt>
-              <dd className="text-sm text-gray-900 mt-1">{entity.visibility_type}</dd>
+              <dt className="text-sm font-medium text-surface-500">Visibility</dt>
+              <dd className="text-sm text-surface-900 mt-1">{entity.visibility_type}</dd>
             </div>
           </dl>
         </Card>
 
-        {/* Location Information */}
         <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
             <MapPin size={18} />
             Location
           </h2>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Zone PK</dt>
-              <dd className="text-sm text-gray-900 mt-1 font-mono">{entity.zone_pk}</dd>
+              <dt className="text-sm font-medium text-surface-500">Zone PK</dt>
+              <dd className="text-sm text-surface-900 mt-1 font-mono">{entity.zone_pk}</dd>
             </div>
             {zone && (
               <div>
-                <dt className="text-sm font-medium text-gray-500">Full Address</dt>
-                <dd className="text-sm text-gray-900 mt-1">{zone.fullAddress}</dd>
+                <dt className="text-sm font-medium text-surface-500">Full Address</dt>
+                <dd className="text-sm text-surface-900 mt-1">{zone.fullAddress}</dd>
               </div>
             )}
             <div>
-              <dt className="text-sm font-medium text-gray-500">City/Village ID</dt>
-              <dd className="text-sm text-gray-900 mt-1 font-mono">{entity.cityVillageId}</dd>
+              <dt className="text-sm font-medium text-surface-500">City/Village ID</dt>
+              <dd className="text-sm text-surface-900 mt-1 font-mono">{entity.cityVillageId}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Street ID</dt>
-              <dd className="text-sm text-gray-900 mt-1 font-mono">{entity.streetId}</dd>
+              <dt className="text-sm font-medium text-surface-500">Street ID</dt>
+              <dd className="text-sm text-surface-900 mt-1 font-mono">{entity.streetId}</dd>
             </div>
           </dl>
         </Card>
 
-        {/* Classification */}
         <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
             <Tag size={18} />
             Classification
           </h2>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Primary Domain</dt>
-              <dd className="text-sm text-gray-900 mt-1">
+              <dt className="text-sm font-medium text-surface-500">Primary Domain</dt>
+              <dd className="text-sm text-surface-900 mt-1">
                 {entity.primary_domain} {domain && `- ${domain.name}`}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Category</dt>
-              <dd className="text-sm text-gray-900 mt-1">
+              <dt className="text-sm font-medium text-surface-500">Category</dt>
+              <dd className="text-sm text-surface-900 mt-1">
                 {entity.category_pk} - {entity.category_name}
               </dd>
             </div>
             {type && (
               <div>
-                <dt className="text-sm font-medium text-gray-500">Type</dt>
-                <dd className="text-sm text-gray-900 mt-1">
+                <dt className="text-sm font-medium text-surface-500">Type</dt>
+                <dd className="text-sm text-surface-900 mt-1">
                   {type.pk} - {type.name}
                 </dd>
               </div>
@@ -199,28 +193,27 @@ export default function EntityDetails() {
           </dl>
         </Card>
 
-        {/* Metadata */}
         <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
             <Calendar size={18} />
             Metadata
           </h2>
           <dl className="space-y-3">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Created At</dt>
-              <dd className="text-sm text-gray-900 mt-1">
+              <dt className="text-sm font-medium text-surface-500">Created At</dt>
+              <dd className="text-sm text-surface-900 mt-1">
                 {entity.createdAt ? new Date(entity.createdAt).toLocaleString() : 'N/A'}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Updated At</dt>
-              <dd className="text-sm text-gray-900 mt-1">
+              <dt className="text-sm font-medium text-surface-500">Updated At</dt>
+              <dd className="text-sm text-surface-900 mt-1">
                 {entity.updatedAt ? new Date(entity.updatedAt).toLocaleString() : 'N/A'}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Status</dt>
-              <dd className="text-sm text-gray-900 mt-1">
+              <dt className="text-sm font-medium text-surface-500">Status</dt>
+              <dd className="text-sm text-surface-900 mt-1">
                 <Badge variant={isStopped ? 'danger' : 'success'}>
                   {entity.status}
                 </Badge>
@@ -228,18 +221,17 @@ export default function EntityDetails() {
             </div>
           </dl>
         </Card>
-      </div>
 
-      {/* Website Zone Entity */}
-      {entity.website_zone_entity_id && (
-        <Card>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Globe size={18} />
-            Website Zone Entity
-          </h2>
-          <p className="text-sm text-gray-700">{entity.website_zone_entity_id}</p>
-        </Card>
-      )}
+        {entity.website_zone_entity_id && (
+          <Card>
+            <h2 className="text-lg font-semibold text-surface-900 mb-4 flex items-center gap-2">
+              <Globe size={18} />
+              Website Zone Entity
+            </h2>
+            <p className="text-sm text-surface-700">{entity.website_zone_entity_id}</p>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

@@ -15,7 +15,8 @@ export function parseCSV(content: string): CSVParseResult {
   const records: PendingEntity[] = [];
   
   try {
-    const lines = content.trim().split('\n');
+    // Normalise line endings so CRLF files work correctly
+    const lines = content.trim().replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
     
     if (lines.length < 2) {
       errors.push('CSV file must contain at least a header row and one data row');

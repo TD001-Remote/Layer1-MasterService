@@ -1,223 +1,128 @@
-# Quick Reference Card
+# Quick Reference — v3.0
 
-## 🚀 New Features at a Glance
-
----
-
-## 📤 CSV Upload
-**Location:** Staging Area (`/staging`)
-
-**Quick Steps:**
-1. Drag CSV file into upload zone OR click to browse
-2. Download template if needed (green button)
-3. Review validation results (red = errors, yellow = warnings)
-4. Edit inline if corrections needed
-5. Click "Promote Valid Records"
-
-**Template Download:** Green button - "Download CSV Template"
-
----
-
-## ➕ Create Entity
-**Location:** Registry Browser (`/registry`)
-
-**Quick Steps:**
-1. Click blue "Create Entity" button in header
-2. Fill out form (name, phone, zone, domain, category, type)
-3. Submit
-4. View newly created entity
-
-**Required Fields:**
-- Entity Name ✅
-- Zone/Location ✅
-- Primary Domain ✅
-- Category ✅
-- Visibility Type ✅
-
-**Optional Fields:**
-- Phone Number
-- Type (shown if available for category)
-
----
-
-## ✏️ Edit Entity
-**Location:** Entity Details Page
-
-**Quick Steps:**
-1. Click "Edit" button on entity details page
-2. Modify fields (now includes Type selection)
-3. Save changes
-
-**New Feature:** Type selection dropdown (filtered by category)
-
----
-
-## 🗂️ Taxonomy Hierarchy
-
-```
-Domain (11 options)
-  └─> Category (filtered by domain)
-        └─> Type (optional, filtered by category)
-```
-
-**Domains:**
-- MED (Medical & Health)
-- EDU (Education)
-- ADM (Administrative)
-- FIN (Finance & Banking)
-- AGR (Agriculture)
-- IND (Industrial)
-- RET (Retail & Bazaars)
-- FOO (Food & Beverage)
-- SPO (Sport & Wellness)
-- TRP (Transport & Logistics)
-- TOU (Tour & Heritage)
-
----
-
-## 🎨 UI Theme
-**New Design:** Clean white panels throughout
-- Light slate background (`#f8fafc`)
-- White cards with subtle shadows
-- Colored accents for different sections
-- Better contrast and readability
-
----
-
-## 🔗 Key Routes
+## Key Routes
 
 | Route | Purpose |
 |-------|---------|
-| `/dashboard` | Main dashboard |
-| `/geography` | Zone management |
-| `/sites` | Site provisioning |
-| `/staging` | **CSV upload & validation** |
-| `/registry` | Browse entities |
-| `/registry/create` | **Create new entity** |
-| `/registry/:id` | Entity details |
-| `/registry/edit/:id` | Edit entity |
+| `/login` | Firebase auth |
+| `/dashboard` | KPI cards + tree panels |
+| `/staging` | 5-tab staging (create / CSV / review / approved) |
+| `/entity-registry` | Entity 3-mode registry |
+| `/non-entity-registry` | Non-entity 3-mode registry |
+| `/entity-assign` | Entity geo/zone assignment |
+| `/non-entity-assign` | Non-entity geo assignment |
+| `/entity-manage` | Entity soft-delete + recover |
+| `/non-entity-manage` | Non-entity soft-delete + recover |
+| `/dct-entity` | Entity-scoped DCT admin |
+| `/dct-non-entity` | Non-entity-scoped DCT admin |
+| `/geography` | Zone manager |
+| `/sites` | Site provisioner |
+| `/data-upload` | L1 → L2 JSON push + cron |
+
+## Domain Quick List
+
+| Code | Entity | Non-Entity |
+|------|--------|------------|
+| MED | Healthcare Services | — |
+| EDU | Education Services | — |
+| ADM | Administrative Services | — |
+| FIN | Finance & Banking | — |
+| AGR | Agriculture Services | Natural Assets |
+| IND | Industrial Services | Infrastructure |
+| RET | Retail & Bazaars | Real Estate |
+| FOO | Food & Beverage | — |
+| SPO | Sport & Wellness | — |
+| TRP | Transport & Logistics | — |
+| TOU | Tour & Heritage | Religious / Cultural |
+| WAT | — | Water Resources |
+| ENE | — | Energy & Power |
+
+## DCT Workflow Shortcuts
+
+| Action | Path | Who |
+|--------|------|-----|
+| Split domain | DCT Entity/Non-Entity → Domains → Split | Master-admin |
+| Convert domain | DCT → Convert tab | Master-admin |
+| Merge domains | DCT → Merge tab (multi-select) | Master-admin |
+| Stop domain | DCT → Stop with redirect | Master-admin |
+| Approve DCT change | DCT → Approval Queue | Master-admin only |
+| Recover archived DCT | DCT → Archive tab → Recover | Master-admin |
+
+## Keyboard Shortcuts
+
+- `Ctrl/Cmd + Click` entity = open in new tab
+- `Drag & Drop` CSV = upload
+- `Tab` = navigate form fields
+- `Enter` = submit form
+- `Esc` = close modal / mobile menu
+
+## Common Tasks
+
+### Create Entity (no geo)
+1. Staging → Create Entity tab
+2. Fill name, phone, domain, category, roles
+3. Submit → status: pending
+4. Admin approves in Pending Review tab
+5. Assign geo/zone in Entity Registry → Pending Assignment
+
+### Bulk CSV Upload
+1. Staging → Upload CSV tab
+2. Download template
+3. Select record type + domain + category
+4. Upload `.csv`
+5. Review success/error count
+
+### Push L1 → L2
+1. Data Upload page
+2. Domain table: Preview / Download JSON / Push to L2
+3. Enter Drive link (or auto-generate mock link)
+4. Schedule cron (calendar icon) for 2-day interval
+5. View history with copy-link
+
+### DCT Split
+1. DCT Entity/Non-Entity → Domains tab
+2. Management Mode → Split Domain
+3. Select source domain
+4. Define 2+ new domains with category redistribution
+5. Submit (master-admin direct / non-master-admin → approval queue)
 
 ---
 
-## 🎯 Common Tasks
+## Field Reference
 
-### Upload Survey Data
-1. Go to `/staging`
-2. Drag CSV file or click upload zone
-3. Review validation
-4. Promote valid records
+| Field | Required | Notes |
+|-------|----------|-------|
+| Entity Name | ✅ | Text |
+| Non-Entity Name | ✅ | Text |
+| Phone | ⚠️ optional | E.164 format recommended |
+| Domain | ✅ | From DCT master |
+| Category | ✅ | Cascades from domain |
+| Type | ⚠️ optional | Cascades from category |
+| State / District / Taluk | ✅ for entity | Cascading geo |
+| Zone PK | ✅ entity / ⚠️ non-entity | Geography page |
 
-### Create Manual Entry
-1. Go to `/registry`
-2. Click "Create Entity"
-3. Fill form
-4. Submit
+## Status Badges
 
-### Edit Existing Entity
-1. Go to `/registry`
-2. Search/find entity
-3. Click to view details
-4. Click "Edit"
-5. Make changes
-6. Save
+| Badge | Meaning |
+|-------|---------|
+| 🟢 Green | Active / Success |
+| 🟡 Amber | Pending / Warning |
+| 🔴 Rose | Stopped / Error |
+| 🔵 Blue | Info / Neutral |
 
----
+## Troubleshooting
 
-## ⚠️ Validation Rules
-
-**Errors (Must Fix):**
-- Empty entity name
-- Invalid zone PK
-- Missing required fields
-
-**Warnings (Review Recommended):**
-- Duplicate entity in same zone
-- Public entity without phone
-- Potential data quality issues
+| Issue | Fix |
+|-------|-----|
+| "isActive is not defined" | Fixed in v3.0 — NavLink children scoped correctly |
+| CSV upload rejected | Check `.csv` extension, headers match template |
+| Zone not found | Geography → create zone first, copy exact PK |
+| Category empty | Select domain first — cascading filter |
+| Type missing | Not all categories have types — normal |
+| DCT change blocked | Non-master-admin → submit for approval |
 
 ---
 
-## 💡 Pro Tips
-
-1. **Use Template:** Always download CSV template for correct format
-2. **Test First:** Use preset simulation data to learn the system
-3. **Small Batches:** Upload small CSV files first to test
-4. **Review Warnings:** Don't ignore yellow badges
-5. **Paper Check:** Use side-by-side comparison for field verification
-6. **Type Optional:** Not all categories have types - that's normal
-
----
-
-## 🆘 Troubleshooting
-
-**CSV Upload Failed?**
-- Check file is .csv format
-- Ensure headers match template
-- Verify zone PKs exist
-- Review error messages
-
-**Can't Find Zone?**
-- Go to Geography page
-- Create zone first if needed
-- Copy exact zone PK format
-
-**Category Not Showing?**
-- Select domain first
-- Categories filter by domain
-- Check category is active
-
-**Type Not Showing?**
-- Select category first
-- Not all categories have types
-- Types are optional
-
----
-
-## 📞 Field Definitions
-
-| Field | Type | Required | Example |
-|-------|------|----------|---------|
-| Entity Name | Text | Yes | "Sirkazhi Hospital" |
-| Phone | Text | No | "+91 4364 270414" |
-| Zone PK | Code | Yes | "ZON-TN-MAY-..." |
-| Domain | Code | Yes | "MED" |
-| Category | Code | Yes | "CAT-MED-101" |
-| Type | Code | No | "TYP-MED-101-01" |
-| Visibility | Enum | Yes | "Public" or "Private/Home" |
-
----
-
-## ✅ Status Indicators
-
-- 🟢 **Green Badge** = Valid record
-- 🔴 **Red Badge** = Critical error (must fix)
-- 🟡 **Yellow Badge** = Warning (review recommended)
-- ⚪ **Gray Badge** = Pending validation
-
----
-
-## 🔑 Keyboard Shortcuts
-
-- `Ctrl/Cmd + Click` on entity = Open in new tab
-- `Drag & Drop` file = Upload CSV
-- `Tab` = Navigate form fields
-- `Enter` = Submit form
-
----
-
-## 📊 Quick Stats
-
-View real-time statistics on:
-- Total entities by domain
-- Validation error count
-- Warning count
-- Active vs stopped records
-
-Location: Top of Staging Area & Registry pages
-
----
-
-**Need Help?** Check the full guides:
-- `FEATURE-IMPLEMENTATION-COMPLETE.md` - Complete feature docs
-- `CSV-UPLOAD-GUIDE.md` - Detailed CSV instructions
-- `IMPLEMENTATION-CHECKLIST.md` - Full feature list
+**Version**: 3.0.0  
+**Build**: passing (`npm run build`)  
+**Docs last updated**: June 29, 2026

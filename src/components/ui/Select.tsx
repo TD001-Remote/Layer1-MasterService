@@ -1,8 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React from 'react';
 import { AlertCircle, ChevronDown } from 'lucide-react';
 
@@ -25,27 +20,25 @@ export function Select({
 }: SelectProps) {
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
   
-  const baseStyles = 'w-full px-3 py-2 text-sm border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-white pr-10';
-  
-  const errorStyles = error
-    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500'
-    : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500';
-
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+          className="block text-xs font-extrabold text-surface-700 uppercase tracking-widest"
         >
           {label}
         </label>
       )}
-      
-      <div className="relative">
+    
+      <div className="relative group">
         <select
           id={selectId}
-          className={`${baseStyles} ${errorStyles} ${className}`}
+          className={`w-full px-4 py-2.5 text-sm bg-white rounded-xl border outline-none transition-all duration-150 focus:ring-2 appearance-none pr-10 ${
+            error
+              ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200'
+              : 'border-surface-200 focus:border-brand-500 focus:ring-brand-100 hover:border-surface-300'
+          } ${className}`}
           {...props}
         >
           {options ? (
@@ -59,20 +52,20 @@ export function Select({
           )}
         </select>
         
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-surface-400 group-focus-within:text-brand-500 transition-colors">
           <ChevronDown size={16} />
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-medium">
-          <AlertCircle size={14} />
+        <div className="flex items-center gap-1.5 text-xs text-rose-600 font-bold pl-0.5">
+          <AlertCircle size={13} />
           <span>{error}</span>
         </div>
       )}
 
       {helperText && !error && (
-        <p className="text-xs text-slate-500 font-medium">{helperText}</p>
+        <p className="text-xs text-surface-500 font-semibold pl-0.5">{helperText}</p>
       )}
     </div>
   );

@@ -1,179 +1,147 @@
 # UI Components Library
 
-Reusable, type-safe UI components for the Layer 1 Identity Registry.
+Reusable, type-safe UI components for the L1 Identity Registry Console.
+
+All components use custom Tailwind design tokens (`brand-*`, `entity-*`, `nonentity-*`, `surface-*`), `rounded-xl/2xl` radii, `font-extrabold` headings, `active:scale-[0.97]` press feedback, and consistent `focus:ring-2` outlines.
 
 ---
 
-## Components
+## Button
 
-### Button
-
-Standardized button with multiple variants and states.
-
-**Props:**
-- `variant`: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
-- `size`: 'sm' | 'md' | 'lg'
-- `loading`: boolean
-- `icon`: React.ReactNode
-- `fullWidth`: boolean
-
-**Usage:**
 ```tsx
 import { Button } from '@/components/ui';
-import { Plus } from 'lucide-react';
 
-<Button variant="primary" size="md" icon={<Plus size={16} />}>
-  Add New
+<Button variant="primary" size="md" icon={<Plus />}>
+  Create Entity
 </Button>
 
 <Button variant="danger" loading>
   Deleting...
 </Button>
+
+<Button variant="outline" fullWidth>
+  Cancel
+</Button>
 ```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `variant` | `primary` \| `secondary` \| `danger` \| `ghost` \| `outline` | `primary` |
+| `size` | `sm` \| `md` \| `lg` | `md` |
+| `loading` | `boolean` | `false` |
+| `icon` | `ReactNode` | — |
+| `fullWidth` | `boolean` | `false` |
 
 ---
 
-### Input
+## Input
 
-Form input with label, error state, and helper text.
-
-**Props:**
-- `label`: string
-- `error`: string
-- `helperText`: string
-- `icon`: React.ReactNode
-
-**Usage:**
 ```tsx
 import { Input } from '@/components/ui';
 import { Search } from 'lucide-react';
 
 <Input
   label="Search Term"
-  placeholder="Enter name or ID..."
+  placeholder="Enter name or PK..."
   icon={<Search size={16} />}
   error={errors.search}
-  helperText="Search by entity name or PK"
+  helperText="Search by entity name"
 />
 ```
 
+| Prop | Type | Default |
+|------|------|---------|
+| `label` | `string` | — |
+| `error` | `string` | — |
+| `helperText` | `string` | — |
+| `icon` | `ReactNode` | — |
+
+Features: focus ring transitions, icon slot with color shift on focus, error state with `AlertCircle`
+
 ---
 
-### Select
+## Select
 
-Dropdown select with label and error state.
-
-**Props:**
-- `label`: string
-- `error`: string
-- `helperText`: string
-- `options`: { value: string; label: string }[]
-
-**Usage:**
 ```tsx
 import { Select } from '@/components/ui';
 
 <Select
   label="Domain"
-  options={[
-    { value: 'MED', label: 'Medical' },
-    { value: 'EDU', label: 'Education' },
-  ]}
+  options={domains.map(d => ({ value: d.code, label: d.name }))}
 />
 
-// Or with children
 <Select label="Status">
-  <option value="">Select...</option>
   <option value="active">Active</option>
   <option value="stopped">Stopped</option>
 </Select>
 ```
 
+| Prop | Type | Default |
+|------|------|---------|
+| `label` | `string` | — |
+| `error` | `string` | — |
+| `helperText` | `string` | — |
+| `options` | `{ value: string; label: string }[]` | — |
+
 ---
 
-### Card & CardHeader
+## Card + CardHeader
 
-Content container with consistent styling.
-
-**Props (Card):**
-- `padding`: 'none' | 'sm' | 'md' | 'lg'
-- `hover`: boolean
-
-**Props (CardHeader):**
-- `title`: string
-- `subtitle`: string
-- `action`: React.ReactNode
-
-**Usage:**
 ```tsx
 import { Card, CardHeader, Button } from '@/components/ui';
 
 <Card padding="lg" hover>
   <CardHeader
     title="Entity Details"
-    subtitle="View and manage entity information"
+    subtitle="View and manage"
+    icon={<Building2 size={18} />}
     action={<Button size="sm">Edit</Button>}
   />
-  <div className="mt-4">
-    {/* Content */}
-  </div>
+  <div className="mt-4">…</div>
 </Card>
 ```
 
+| Card prop | Type | Default |
+|-----------|------|---------|
+| `padding` | `none` \| `sm` \| `md` \| `lg` | `md` |
+| `hover` | `boolean` | `false` |
+
 ---
 
-### Badge
+## Badge
 
-Status indicator with color variants.
-
-**Props:**
-- `variant`: 'default' | 'success' | 'warning' | 'danger' | 'info'
-- `size`: 'sm' | 'md' | 'lg'
-
-**Usage:**
 ```tsx
 import { Badge } from '@/components/ui';
 
 <Badge variant="success" size="md">Active</Badge>
-<Badge variant="warning">Pending</Badge>
-<Badge variant="danger">Stopped</Badge>
+<Badge variant="warning" dot>Pending Review</Badge>
 ```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `variant` | `default` \| `success` \| `warning` \| `danger` \| `info` | `default` |
+| `size` | `sm` \| `md` \| `lg` | `md` |
+| `dot` | `boolean` | `false` |
 
 ---
 
-### Modal
+## Modal
 
-Dialog/modal overlay with backdrop.
-
-**Props:**
-- `isOpen`: boolean
-- `onClose`: () => void
-- `title`: string
-- `maxWidth`: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-- `showCloseButton`: boolean
-
-**Usage:**
 ```tsx
 import { Modal, Button } from '@/components/ui';
 import { useState } from 'react';
 
-function MyComponent() {
-  const [isOpen, setIsOpen] = useState(false);
+function Example() {
+  const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
-      
-      <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title="Confirm Action"
-        maxWidth="md"
-      >
-        <p>Are you sure you want to proceed?</p>
+      <Button onClick={() => setOpen(true)}>Open</Button>
+      <Modal isOpen={open} onClose={() => setOpen(false)} title="Confirm" maxWidth="md">
+        <p>Are you sure?</p>
         <div className="flex gap-2 mt-4">
-          <Button onClick={() => setIsOpen(false)}>Cancel</Button>
-          <Button variant="danger">Confirm</Button>
+          <Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => setOpen(false)}>Confirm</Button>
         </div>
       </Modal>
     </>
@@ -181,27 +149,33 @@ function MyComponent() {
 }
 ```
 
+| Prop | Type | Default |
+|------|------|---------|
+| `isOpen` | `boolean` | — |
+| `onClose` | `() => void` | — |
+| `title` | `string` | — |
+| `maxWidth` | `sm` \| `md` \| `lg` \| `xl` \| `2xl` | `md` |
+| `showCloseButton` | `boolean` | `true` |
+
+Features: Escape-close, body scroll lock, backdrop blur + `animate-fade-in-up`
+
 ---
 
-### LoadingSpinner
+## LoadingSpinner
 
-Loading indicator with optional text.
-
-**Props:**
-- `size`: number
-- `text`: string
-- `fullScreen`: boolean
-
-**Usage:**
 ```tsx
 import { LoadingSpinner } from '@/components/ui';
 
-// Inline
-<LoadingSpinner size={24} text="Loading data..." />
-
-// Full screen overlay
-<LoadingSpinner fullScreen text="Processing..." />
+<LoadingSpinner size={24} text="Loading data…" />
+<LoadingSpinner fullScreen color="text-brand-600" />
 ```
+
+| Prop | Type | Default |
+|------|------|---------|
+| `size` | `number` | `24` |
+| `text` | `string` | — |
+| `fullScreen` | `boolean` | `false` |
+| `color` | `string` | `text-brand-600` |
 
 ---
 
@@ -209,28 +183,33 @@ import { LoadingSpinner } from '@/components/ui';
 
 ### Colors
 
-**Primary**: Indigo
-- `indigo-600` - Primary buttons, focus rings
-- `indigo-700` - Hover states
+| Token | Usage |
+|-------|-------|
+| `brand-*` (teal) | Primary actions, focus rings |
+| `entity-*` (orange) | Entity pages, indicators |
+| `nonentity-*` (blue) | Non-entity pages, indicators |
+| `dct-*` (emerald) | DCT management |
+| `upload-*` (violet) | Data upload |
+| `site-*` (rose) | Site provisioning |
+| `geo-*` (teal) | Geography manager |
+| `surface-*` (gray) | Backgrounds, borders, text |
 
-**Success**: Emerald
-- `emerald-100/800` - Success badges, messages
+### Shadows
 
-**Warning**: Amber
-- `amber-100/800` - Warning badges, messages
-
-**Danger**: Rose
-- `rose-600` - Danger buttons, error states
-
-**Neutral**: Slate
-- `slate-100` - Secondary buttons
-- `slate-700` - Text
+| Token | Value |
+|-------|-------|
+| `shadow-card-rest` | `0 1px 2px rgb(0 0 0 / 0.04)` |
+| `shadow-card-hover` | `0 10px 15px -3px rgb(0 0 0 / 0.06)` |
+| `shadow-elevated` | `0 20px 25px -5px rgb(0 0 0 / 0.08)` |
+| `shadow-brand-glow` | `0 0 24px -4px var(--color-brand-300)` |
 
 ### Typography
 
-- **Font Display**: `font-display` - Headings
-- **Font Body**: `font-sans` - Body text
-- **Font Mono**: `font-mono` - Code, IDs
+| Token | Usage |
+|-------|-------|
+| `font-display` | Headings, tracking-tight |
+| `font-sans` | Body text |
+| `font-mono` | PKs, codes, paths, IDs |
 
 ### Spacing
 
@@ -240,9 +219,9 @@ import { LoadingSpinner } from '@/components/ui';
 
 ### Borders
 
-- **Default**: `border-slate-200`
-- **Focus**: `focus:border-indigo-500`
-- **Radius**: `rounded-lg` (8px), `rounded-xl` (12px)
+- **Default**: `border-surface-200`
+- **Focus**: `focus:border-brand-500 focus:ring-brand-200`
+- **Radius**: `rounded-xl` (12px), `rounded-2xl` (16px)
 
 ---
 
@@ -255,79 +234,3 @@ import { LoadingSpinner } from '@/components/ui';
 5. **Use loading states** for async operations
 6. **Use modals** for confirmations and forms
 7. **Use badges** for status indicators
-
----
-
-## Examples
-
-### Form Example
-```tsx
-import { Input, Select, Button } from '@/components/ui';
-
-function EntityForm() {
-  return (
-    <form className="space-y-4">
-      <Input
-        label="Entity Name"
-        placeholder="Enter entity name"
-        required
-      />
-      
-      <Select
-        label="Domain"
-        options={domains.map(d => ({
-          value: d.code,
-          label: d.name
-        }))}
-      />
-      
-      <div className="flex gap-2">
-        <Button type="button" variant="secondary">
-          Cancel
-        </Button>
-        <Button type="submit" variant="primary">
-          Create Entity
-        </Button>
-      </div>
-    </form>
-  );
-}
-```
-
-### List with Cards Example
-```tsx
-import { Card, CardHeader, Badge, Button } from '@/components/ui';
-
-function EntityList() {
-  return (
-    <div className="space-y-4">
-      {entities.map(entity => (
-        <Card key={entity.id} hover>
-          <CardHeader
-            title={entity.name}
-            subtitle={entity.zone_pk}
-            action={
-              <Badge variant={entity.status === 'active' ? 'success' : 'danger'}>
-                {entity.status}
-              </Badge>
-            }
-          />
-        </Card>
-      ))}
-    </div>
-  );
-}
-```
-
----
-
-## Contributing
-
-When adding new components:
-
-1. Follow the existing component patterns
-2. Include TypeScript types
-3. Support common variants (size, variant)
-4. Add proper accessibility attributes
-5. Document props and usage
-6. Test with different states

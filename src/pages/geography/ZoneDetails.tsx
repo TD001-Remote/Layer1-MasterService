@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -13,15 +13,39 @@ import {
   Database,
   Building,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { Button } from "../../components/ui/Button";
+import { entityApi } from "../../services/api";
+import { ActiveEntity } from "../../types";
 
 export default function ZoneDetails() {
   const { zoneId } = useParams<{ zoneId: string }>();
   const navigate = useNavigate();
-  const { cities, areas, streets, substreets, activeEntities } = useData();
+  const { cities, areas, streets, substreets, activeEntities: ctxActiveEntities } = useData();
+  
+  const [fbEntities, setFbEntities] = useState<ActiveEntity[]>([]);
+  const [isLoadingFb, setIsLoadingFb] = useState(false);
+  
+  const loadFromFirestore = async () => {
+    setIsLoadingFb(true);
+    try {
+      const data = await entityApi.getAll();
+      setFbEntities(data);
+    } catch (err) {
+      console.error('Failed to load entities from Firestore:', String(err).replace(/[\r\n]/g, ' '));
+    } finally {
+      setIsLoadingFb(false);
+    }
+  };
+  
+  useEffect(() => {
+    loadFromFirestore();
+  }, []);
+  
+  const activeEntities = fbEntities.length > 0 ? fbEntities : ctxActiveEntities;
 
   // Determine zone type and find the zone
   const zoneType = zoneId?.includes("CITY") ? "city" 
@@ -64,7 +88,7 @@ export default function ZoneDetails() {
       
       // Count entities in this city
       const entityCount = activeEntities.filter(e => 
-        e.city_pk === zone.id
+        e.cityVillageId === zone.id
       ).length;
 
       return {
@@ -80,7 +104,7 @@ export default function ZoneDetails() {
       );
       
       const entityCount = activeEntities.filter(e => 
-        e.area_pk === zone.id
+        e.areaId === zone.id
       ).length;
 
       return {
@@ -92,7 +116,7 @@ export default function ZoneDetails() {
       const streetSubstreets = substreets.filter(sub => sub.streetId === zone.id);
       
       const entityCount = activeEntities.filter(e => 
-        e.street_pk === zone.id
+        e.streetId === zone.id
       ).length;
 
       return {
@@ -101,7 +125,7 @@ export default function ZoneDetails() {
       };
     } else if (zoneType === "substreet") {
       const entityCount = activeEntities.filter(e => 
-        e.substreet_pk === zone.id
+        e.substreetId === zone.id
       ).length;
 
       return {
@@ -172,6 +196,14 @@ export default function ZoneDetails() {
         </div>
         
         <div className="flex gap-2">
+          <button
+            onClick={loadFromFirestore}
+            disabled={isLoadingFb}
+            className="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh entity counts from Firebase"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoadingFb ? 'animate-spin' : ''}`} />
+          </button>
           <Button
             onClick={() => navigate(`/geography/edit/${zone.id}`)}
             variant="primary"

@@ -10,23 +10,21 @@ import {
   Mail,
   Lock,
   Loader2,
-  UserCheck,
   AlertCircle,
+  Fingerprint,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { validateEmail, validatePassword } from '../../utils/validation';
 
 export default function Login() {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
-  
+
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
-  // Inline field errors
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
@@ -34,7 +32,6 @@ export default function Login() {
     e.preventDefault();
     setAuthError(null);
 
-    // Validate fields before submitting
     const eErr = validateEmail(authEmail);
     const pErr = validatePassword(authPassword);
     setEmailError(eErr);
@@ -42,21 +39,13 @@ export default function Login() {
     if (eErr || pErr) return;
 
     setAuthSubmitting(true);
-    
+
     try {
-      if (isSignUp) {
-        await signUp(authEmail, authPassword);
-      } else {
-        await signIn(authEmail, authPassword);
-      }
-      navigate('/dashboard');
+      await signIn(authEmail, authPassword);
+      navigate('/admin/setup');
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/operation-not-allowed' || err.message?.includes('operation-not-allowed')) {
-        setAuthError(
-          'Email/Password accounts are not enabled in your Firebase Console yet. Please enable it in Authentication settings.'
-        );
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         setAuthError('Invalid email or password. Please check your credentials and try again.');
       } else {
         setAuthError(err.message || 'Failed to complete authentication. Verify credentials.');
@@ -66,188 +55,145 @@ export default function Login() {
     }
   };
 
-  const attemptDemoSignIn = async () => {
-    setAuthError(null);
-    setAuthSubmitting(true);
-    const demoEmail = 'engineer@mayiladuthurai.gov.in';
-    const demoPass = 'engineer123';
-    
-    try {
-      await signIn(demoEmail, demoPass);
-      navigate('/dashboard');
-    } catch (err: any) {
-      if (err.code === 'auth/operation-not-allowed' || err.message?.includes('operation-not-allowed')) {
-        setAuthError(
-          'Email/Password accounts are not enabled in your Firebase Console yet. Please enable it in Authentication settings.'
-        );
-      } else if (
-        err.code === 'auth/user-not-found' ||
-        err.message?.includes('not-found') ||
-        err.message?.includes('invalid-credential')
-      ) {
-        try {
-          await signUp(demoEmail, demoPass);
-          navigate('/dashboard');
-        } catch (signUpErr: any) {
-          console.error(signUpErr);
-          if (signUpErr.code === 'auth/operation-not-allowed' || signUpErr.message?.includes('operation-not-allowed')) {
-            setAuthError(
-              'Email/Password accounts are not enabled in your Firebase Console yet. Please enable it in Authentication settings.'
-            );
-          } else {
-            setAuthError('Failed to auto-provision demo account. Please sign up manually.');
-          }
-        }
-      } else {
-        console.error(err);
-        setAuthError(err.message || 'Credential verification failed.');
-      }
-    } finally {
-      setAuthSubmitting(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-40" />
-
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-xl space-y-6 relative z-10">
-        {/* Logo and title */}
-        <div className="space-y-2 text-center">
-          <div className="inline-flex p-3 bg-indigo-600 text-white rounded-2xl mb-2 shadow-md">
-            <Workflow size={32} />
-          </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 font-display">
-            Tamil Nadu & Puducherry UT
-          </h1>
-          <p className="text-xs text-slate-600 font-medium">
-            L1 Secure Identity & Settlement Database Console
-          </p>
-        </div>
-
-        {/* Firebase Auth Configuration Notice */}
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3.5 rounded-xl text-[11px] space-y-1.5 leading-relaxed font-sans">
-          <span className="font-extrabold text-amber-900 flex items-center gap-1.5 font-display text-xs">
-            🔑 Firebase Auth Configuration Alert
-          </span>
-          <p className="font-semibold text-slate-700">
-            Can't see Email/Password sign-up/login option in Firebase? Please activate it:
-          </p>
-          <ul className="list-disc pl-4 space-y-1 font-mono text-[9px] text-slate-600 font-bold uppercase tracking-wide">
-            <li>Go to "Firebase Authentication"</li>
-            <li>Select "Sign-in method" tab</li>
-            <li>Enable "Email/Password" provider</li>
-          </ul>
-        </div>
-
-        {/* Error message */}
-        {authError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs flex items-start space-x-2">
-            <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-            <span className="font-medium">{authError}</span>
-          </div>
-        )}
-
-        {/* Auth form */}
-        <form onSubmit={handleAuthSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 flex items-center space-x-2">
-              <Mail size={14} />
-              <span>Email Address</span>
-            </label>
-            <input
-              type="email"
-              value={authEmail}
-              onChange={(e) => { setAuthEmail(e.target.value); setEmailError(null); }}
-              placeholder="engineer@mayiladuthurai.gov.in"
-              className={`w-full px-4 py-3 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                emailError
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                  : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
-              }`}
-              disabled={authSubmitting}
-            />
-            {emailError && (
-              <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium mt-1">
-                <AlertCircle size={13} />
-                <span>{emailError}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 flex items-center space-x-2">
-              <Lock size={14} />
-              <span>Password</span>
-            </label>
-            <input
-              type="password"
-              value={authPassword}
-              onChange={(e) => { setAuthPassword(e.target.value); setPasswordError(null); }}
-              placeholder="Enter secure password (min 6 characters)"
-              className={`w-full px-4 py-3 bg-white border rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                passwordError
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                  : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
-              }`}
-              disabled={authSubmitting}
-            />
-            {passwordError && (
-              <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium mt-1">
-                <AlertCircle size={13} />
-                <span>{passwordError}</span>
-              </div>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={authSubmitting}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-md"
-          >
-            {authSubmitting ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>{isSignUp ? 'Creating Account...' : 'Signing In...'}</span>
-              </>
-            ) : (
-              <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
-            )}
-          </button>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-xs text-indigo-600 hover:text-indigo-700 transition-colors font-medium"
-              disabled={authSubmitting}
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
-          </div>
-        </form>
-
-        {/* Demo account button */}
-        <div className="pt-4 border-t border-slate-200">
-          <button
-            onClick={attemptDemoSignIn}
-            disabled={authSubmitting}
-            className="w-full py-3 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-sm"
-          >
-            <UserCheck size={16} />
-            <span>Quick Demo Login</span>
-          </button>
-          <p className="text-[10px] text-slate-500 text-center mt-2 font-mono">
-            Demo: engineer@mayiladuthurai.gov.in / engineer123
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden bg-gradient-to-br from-brand-50 via-surface-100 to-brand-100">
+      {/* Decorative ambient background */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-brand-200/20 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-brand-300/15 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(20,184,166,0.12),transparent_60%)]" />
       </div>
 
-      {/* Footer */}
-      <div className="mt-6 text-center text-xs text-slate-600 relative z-10">
-        <p className="font-medium">© 2026 Tamil Nadu & Puducherry Identity Registry</p>
-        <p className="mt-1 font-mono text-slate-500">Secure L1 Database Console v2.0</p>
+      {/* Card */}
+      <div className="w-full max-w-md relative z-10 animate-fade-in-up">
+        {/* Logo top */}
+        <div className="text-center mb-6">
+          <div className="inline-flex p-3.5 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-xl shadow-brand-500/20 ring-1 ring-white/20">
+            <Workflow size={32} />
+          </div>
+        </div>
+
+        <div className="bg-white/80 backdrop-blur-2xl border border-white/40 rounded-3xl p-8 shadow-2xl shadow-brand-900/5 ring-1 ring-surface-200/60 space-y-7">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-extrabold tracking-tight text-surface-900 font-display">
+              Tamil Nadu & Puducherry UT
+            </h1>
+            <p className="text-sm text-surface-500 font-semibold">
+              L1 Secure Identity & Settlement Database Console
+            </p>
+          </div>
+
+          {/* Error banner */}
+          {authError && (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex items-start space-x-3 animate-fade-in">
+              <AlertCircle size={18} className="flex-shrink-0 mt-0.5 text-rose-500" />
+              <span className="text-sm font-medium text-rose-800 leading-relaxed">{authError}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleAuthSubmit} className="space-y-5">
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-surface-700">
+                <Mail size={15} className="text-surface-400" />
+                <span>Email Address</span>
+              </label>
+              <div className="relative group">
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => { setAuthEmail(e.target.value); setEmailError(null); }}
+                  placeholder="engineer@mayiladuthurai.gov.in"
+                  className={`w-full pl-4 pr-10 py-3 bg-white rounded-xl text-sm text-surface-900 placeholder-surface-400 border outline-none transition-all duration-200 focus:ring-2 ${
+                    emailError
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200'
+                      : 'border-surface-200 focus:border-brand-500 focus:ring-brand-100 hover:border-surface-300'
+                  }`}
+                  disabled={authSubmitting}
+                  autoFocus
+                />
+                <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-300 group-focus-within:text-brand-500 transition-colors" />
+              </div>
+              {emailError && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold pl-1">
+                  <AlertCircle size={12} />
+                  <span>{emailError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-surface-700">
+                <Lock size={15} className="text-surface-400" />
+                <span>Password</span>
+              </label>
+              <div className="relative group">
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => { setAuthPassword(e.target.value); setPasswordError(null); }}
+                  placeholder="Enter secure password (min 6 characters)"
+                  className={`w-full pl-4 pr-10 py-3 bg-white rounded-xl text-sm text-surface-900 placeholder-surface-400 border outline-none transition-all duration-200 focus:ring-2 ${
+                    passwordError
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200'
+                      : 'border-surface-200 focus:border-brand-500 focus:ring-brand-100 hover:border-surface-300'
+                  }`}
+                  disabled={authSubmitting}
+                />
+                <Lock size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-300 group-focus-within:text-brand-500 transition-colors" />
+              </div>
+              {passwordError && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-600 font-semibold pl-1">
+                  <AlertCircle size={12} />
+                  <span>{passwordError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={authSubmitting}
+              className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 active:scale-[0.98]"
+            >
+              {authSubmitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <span>Sign In to Console</span>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-surface-200" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+              <span className="px-3 bg-white text-surface-400 font-bold">Secure Access</span>
+            </div>
+          </div>
+
+          {/* Footer info */}
+          <div className="flex items-center justify-center gap-2 text-[11px] text-surface-400 font-semibold">
+            <Fingerprint size={13} />
+            <span>Firebase Auth · Role-Based Access · Encrypted</span>
+          </div>
+        </div>
+
+        {/* Bottom attribution */}
+        <div className="text-center mt-8 space-y-1">
+          <p className="text-xs text-surface-400 font-medium">© 2026 Tamil Nadu & Puducherry Identity Registry</p>
+          <p className="text-[11px] text-surface-400 font-mono font-semibold tracking-wide">
+            Secure L1 Database Console v3.0
+          </p>
+        </div>
       </div>
     </div>
   );
