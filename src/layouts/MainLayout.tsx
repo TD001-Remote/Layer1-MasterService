@@ -30,7 +30,8 @@ import ErrorBoundary from '../components/ErrorBoundary';
 
 const ROUTE_THEME: Record<string, string> = {
   '/entity': 'entity',
-  '/non-entity': 'nonentity',
+  '/person': 'person',
+  '/non-entity': 'physicalasset',
   '/dct': 'dct',
   '/data-upload': 'upload',
   '/staging': 'upload',
@@ -49,6 +50,7 @@ function getThemeGradient(theme: string) {
   const map: Record<string, string> = {
     brand: 'from-brand-600 to-brand-700',
     entity: 'from-orange-500 to-amber-600',
+    person: 'from-purple-500 to-violet-600',
     nonentity: 'from-blue-500 to-indigo-600',
     dct: 'from-emerald-500 to-teal-600',
     upload: 'from-violet-500 to-purple-600',
@@ -76,6 +78,8 @@ export default function MainLayout() {
     { path: '/data-upload', icon: Share2, label: 'Data Upload', theme: 'upload', shortcut: '⌘U' },
     { path: '/entity-assign', icon: Building2, label: 'Entity Assignment', theme: 'entity', shortcut: '⌘E' },
     { path: '/entity-manage', icon: Building2, label: 'Entity Management', theme: 'entity', shortcut: null },
+    { path: '/person-assign', icon: Users, label: 'Person Assignment', theme: 'person', shortcut: null },
+    { path: '/person-manage', icon: Users, label: 'Person Management', theme: 'person', shortcut: null },
     { path: '/non-entity-assign', icon: Home, label: 'Non-Entity Assignment', theme: 'nonentity', shortcut: '⌘N' },
     { path: '/non-entity-manage', icon: Home, label: 'Non-Entity Management', theme: 'nonentity', shortcut: null },
     { path: '/dct-entity', icon: Users, label: 'DCT Entity Admin', theme: 'dct', shortcut: null },

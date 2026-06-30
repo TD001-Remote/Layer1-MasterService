@@ -23,6 +23,8 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
   staging: <UploadCloud size={20} />,
   'entity-zone-assign': <MapPin size={20} />,
   'entity-manage': <Building2 size={20} />,
+  'person-assign': <Users size={20} />,
+  'person-manage': <Users size={20} />,
   'non-entity-zone-assign': <Home size={20} />,
   'non-entity-manage': <Home size={20} />,
   'dct-entity': <Users size={20} />,
@@ -35,6 +37,7 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
   core: { label: 'Core Operations', icon: <ClipboardList size={16} /> },
   entity: { label: 'Entity Management', icon: <Building2 size={16} /> },
+  person: { label: 'Person Management', icon: <Users size={16} /> },
   nonentity: { label: 'Non-Entity Management', icon: <Home size={16} /> },
   dct: { label: 'DCT Classification', icon: <Users size={16} /> },
   geo: { label: 'Geography', icon: <MapPin size={16} /> },
@@ -45,7 +48,8 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
 const CATEGORY_COLORS: Record<string, string> = {
   core: 'var(--color-brand-600)',
   entity: 'var(--color-entity-600)',
-  nonentity: 'var(--color-nonentity-600)',
+  person: 'var(--color-person-600)',
+  nonentity: 'var(--color-physicalasset-600)',
   dct: 'var(--color-dct-600)',
   geo: 'var(--color-geo-600)',
   site: 'var(--color-site-600)',
@@ -127,6 +131,7 @@ export default function AdminSetup() {
   const categoryLabels: Record<string, string> = {
     core: 'Core Operations',
     entity: 'Entity Management',
+    person: 'Person Management',
     nonentity: 'Non-Entity Management',
     dct: 'DCT Classification',
     geo: 'Geography',

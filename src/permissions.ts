@@ -3,6 +3,8 @@ export type AdminModuleKey =
   | 'staging'
   | 'entity-zone-assign'
   | 'entity-manage'
+  | 'person-assign'
+  | 'person-manage'
   | 'non-entity-zone-assign'
   | 'non-entity-manage'
   | 'dct-entity'
@@ -11,7 +13,7 @@ export type AdminModuleKey =
   | 'site-zone-assign'
   | 'data-upload';
 
-export type ModuleCategory = 'core' | 'entity' | 'nonentity' | 'dct' | 'geo' | 'site' | 'upload';
+export type ModuleCategory = 'core' | 'entity' | 'person' | 'nonentity' | 'dct' | 'geo' | 'site' | 'upload';
 export interface AdminModuleOption {
   key: AdminModuleKey;
   label: string;
@@ -23,6 +25,8 @@ export const ADMIN_MODULES: AdminModuleOption[] = [
   { key: 'staging', label: 'Data Staging', description: 'Review and approve CSV uploads', category: 'core' },
   { key: 'entity-zone-assign', label: 'Entity Zone Assignment', description: 'Assign geo zones to new entities', category: 'entity' },
   { key: 'entity-manage', label: 'Entity Management', description: 'Edit, move, and manage entities', category: 'entity' },
+  { key: 'person-assign', label: 'Person Assignment', description: 'Create person records linking entities and non-entities', category: 'person' },
+  { key: 'person-manage', label: 'Person Management', description: 'View and manage person records', category: 'person' },
   { key: 'non-entity-zone-assign', label: 'Non-Entity Zone Assignment', description: 'Assign geo zones to non-entities', category: 'nonentity' },
   { key: 'non-entity-manage', label: 'Non-Entity Management', description: 'Edit, move, and manage non-entities', category: 'nonentity' },
   { key: 'dct-entity', label: 'DCT Entity Classification', description: 'Manage entity domain/category/type', category: 'dct' },
@@ -37,6 +41,8 @@ export const MASTER_ADMIN_MODULES: AdminModuleKey[] = [
   'staging',
   'entity-zone-assign',
   'entity-manage',
+  'person-assign',
+  'person-manage',
   'non-entity-zone-assign',
   'non-entity-manage',
   'dct-entity',
@@ -52,6 +58,8 @@ export const ROUTE_REQUIRED_MODULES: Record<string, AdminModuleKey> = {
   '/entity-assign': 'entity-zone-assign',
   '/entity-manage': 'entity-manage',
   '/entity-registry': 'entity-manage',
+  '/person-assign': 'person-assign',
+  '/person-manage': 'person-manage',
   '/non-entity-assign': 'non-entity-zone-assign',
   '/non-entity-manage': 'non-entity-manage',
   '/non-entity-registry': 'non-entity-manage',

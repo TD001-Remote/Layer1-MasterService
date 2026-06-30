@@ -392,20 +392,24 @@ export function DataProvider({ children }: DataProviderProps) {
           },
         ];
 
-        const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
+const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
 
-        // Set all state
-        setCities(citiesData);
-        setAreas(areasData);
-        setStreets(streetsData);
-        setSubstreets(substreetsData);
-        setSites(sitesData);
-        setActiveEntities(entitiesData);
-        setPendingEntities(pendingData);
-        setDomains(domainsData);
-        setCategories(categoriesData);
-        setTypes(typesData);
-        setNonEntities(nonEntitiesData);
+         // Load persons
+         const personsData = await personApi.getAll();
+
+         // Set all state
+         setCities(citiesData);
+         setAreas(areasData);
+         setStreets(streetsData);
+         setSubstreets(substreetsData);
+         setSites(sitesData);
+         setActiveEntities(entitiesData);
+         setPendingEntities(pendingData);
+         setDomains(domainsData);
+         setCategories(categoriesData);
+         setTypes(typesData);
+         setNonEntities(nonEntitiesData);
+         setPersons(personsData);
       } catch (err) {
         console.error('Firebase syncing error:', String(err).replace(/[\r\n]/g, ' '));
       } finally {
@@ -2092,83 +2096,91 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   };
 
-  const value: DataContextType = {
-    isLoading,
-    states,
-    districts,
-    taluks,
-    cities,
-    areas,
-    streets,
-    substreets,
-    zoneRefs,
-    sites,
-    activeEntities,
-    pendingEntities,
-    nonEntities,
-    domains,
-    categories,
-    types,
-    addCity,
-    addArea,
-    addStreet,
-    addSubstreet,
-    updateZone,
-    refreshGeoData,
-    refreshAreas,
-    refreshStreets,
-    getDistrictsByState,
-    getTaluksByDistrict,
-    getCitiesByTaluk,
-    addSite,
-    updateSite,
-    addEntity,
-    updateEntity,
-    stopEntity,
-    recoverEntity,
-    refreshActiveEntities,
-    refreshNonEntities,
-    syncPendingEntities,
-    commitApproved,
-    // NEW: Staging methods
-    getStagingEntities,
-    getStagingNonEntities,
-    createStagingEntity,
-    createStagingNonEntity,
-    approveStagingEntity,
-    approveStagingNonEntity,
-    rejectStagingEntity,
-    rejectStagingNonEntity,
-    // NEW: Registry methods
-    getRegistryEntities,
-    getRegistryNonEntities,
-    assignEntityToRegistry,
-    assignNonEntityToRegistry,
-    moveEntityBranch,
-    moveNonEntityBranch,
-    addNonEntity,
-    updateNonEntity,
-    stopNonEntity,
-    recoverNonEntity,
-    addDomain,
-    updateDomain,
-    stopDomain,
-    recoverDomain,
-    addCategory,
-    updateCategory,
-    stopCategory,
-    recoverCategory,
-    addType,
-    updateType,
-    stopType,
-    recoverType,
-    redirectEntitiesFromDomain,
-    redirectNonEntitiesFromDomain,
-    redirectEntitiesFromCategory,
-    redirectNonEntitiesFromCategory,
-    redirectEntitiesFromType,
-    redirectNonEntitiesFromType,
-splitDomain,
+const value: DataContextType = {
+     isLoading,
+     states,
+     districts,
+     taluks,
+     cities,
+     areas,
+     streets,
+     substreets,
+     zoneRefs,
+     sites,
+     activeEntities,
+     pendingEntities,
+     nonEntities,
+     persons,
+     domains,
+     categories,
+     types,
+     addCity,
+     addArea,
+     addStreet,
+     addSubstreet,
+     updateZone,
+     refreshGeoData,
+     refreshAreas,
+     refreshStreets,
+     getDistrictsByState,
+     getTaluksByDistrict,
+     getCitiesByTaluk,
+     addSite,
+     updateSite,
+     addEntity,
+     updateEntity,
+     stopEntity,
+     recoverEntity,
+     refreshActiveEntities,
+     refreshNonEntities,
+     syncPendingEntities,
+     commitApproved,
+     // NEW: Staging methods
+     getStagingEntities,
+     getStagingNonEntities,
+     createStagingEntity,
+     createStagingNonEntity,
+     approveStagingEntity,
+     approveStagingNonEntity,
+     rejectStagingEntity,
+     rejectStagingNonEntity,
+     // NEW: Registry methods
+     getRegistryEntities,
+     getRegistryNonEntities,
+     assignEntityToRegistry,
+     assignNonEntityToRegistry,
+     moveEntityBranch,
+     moveNonEntityBranch,
+     addNonEntity,
+     updateNonEntity,
+     stopNonEntity,
+     recoverNonEntity,
+     createPerson,
+     updatePersonEntities,
+     addNonEntityToPerson,
+     removeNonEntityFromPerson,
+     stopPerson,
+     recoverPerson,
+     updatePersonParent,
+     addDomain,
+     updateDomain,
+     stopDomain,
+     recoverDomain,
+     addCategory,
+     updateCategory,
+     stopCategory,
+     recoverCategory,
+     addType,
+     updateType,
+     stopType,
+     recoverType,
+     redirectEntitiesFromDomain,
+     redirectNonEntitiesFromDomain,
+     redirectEntitiesFromCategory,
+     redirectNonEntitiesFromCategory,
+     redirectEntitiesFromType,
+redirectNonEntitiesFromType,
+     splitDomain,
      splitCategory,
      splitType,
      convertDomain,
@@ -2180,19 +2192,19 @@ splitDomain,
      modifyDomain,
      modifyCategory,
      modifyType,
-dctChanges,
-      dctArchive,
-      pendingDctChanges,
-      getDctChanges: () => dctChanges,
-      clearDctChanges: () => setDctChanges([]),
-      recoverArchivedDct,
-      permanentlyDeleteArchivedDct,
-      submitForApproval,
-      approveDctChange,
-      rejectDctChange,
-      getPendingDctChanges,
-      showToast,
-   };
+     dctChanges,
+     dctArchive,
+     pendingDctChanges,
+     getDctChanges: () => dctChanges,
+     clearDctChanges: () => setDctChanges([]),
+     recoverArchivedDct,
+     permanentlyDeleteArchivedDct,
+     submitForApproval,
+     approveDctChange,
+     rejectDctChange,
+getPendingDctChanges,
+     showToast,
+  };
 
   return (
     <DataContext.Provider value={value}>

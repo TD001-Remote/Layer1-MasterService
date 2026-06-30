@@ -72,16 +72,27 @@
   --color-site-800: #9f1239;
   --color-site-900: #881337;
 
-  --color-geo-50: #f0fdfa;
-  --color-geo-100: #ccfbf1;
-  --color-geo-200: #99f6e4;
-  --color-geo-300: #5eead4;
-  --color-geo-400: #2dd4bf;
-  --color-geo-500: #14b8a6;
-  --color-geo-600: #0d9488;
-  --color-geo-700: #0f766e;
-  --color-geo-800: #115e59;
-  --color-geo-900: #134e4a;
+--color-geo-50: #f0fdfa;
+   --color-geo-100: #ccfbf1;
+   --color-geo-200: #99f6e4;
+   --color-geo-300: #5eead4;
+   --color-geo-400: #2dd4bf;
+   --color-geo-500: #14b8a6;
+   --color-geo-600: #0d9488;
+   --color-geo-700: #0f766e;
+   --color-geo-800: #115e59;
+   --color-geo-900: #134e4a;
+
+   --color-person-50: #f5f3ff;
+   --color-person-100: #ede9fe;
+   --color-person-200: #ddd6fe;
+   --color-person-300: #c4b5fd;
+   --color-person-400: #a78bfa;
+   --color-person-500: #8b5cf6;
+   --color-person-600: #7c3aed;
+   --color-person-700: #6d28d9;
+   --color-person-800: #5b21b6;
+   --color-person-900: #4c1d95;
 
   --color-surface-50: #ffffff;
   --color-surface-100: #f8fafc;
@@ -293,6 +304,8 @@ input:focus, select:focus, textarea:focus {
 [class*="btn-theme-"] { background: var(--color-brand-600); color: white; border-color: var(--color-brand-600); }
 .btn-theme-entity { background: var(--color-entity-600); border-color: var(--color-entity-600); }
 .btn-theme-entity:hover { background: var(--color-entity-700); border-color: var(--color-entity-700); }
+.btn-theme-person { background: var(--color-person-600); border-color: var(--color-person-600); }
+.btn-theme-person:hover { background: var(--color-person-700); border-color: var(--color-person-700); }
 .btn-theme-physicalasset { background: var(--color-physicalasset-600); border-color: var(--color-physicalasset-600); }
 .btn-theme-physicalasset:hover { background: var(--color-physicalasset-700); border-color: var(--color-physicalasset-700); }
 .btn-theme-dct { background: var(--color-dct-600); border-color: var(--color-dct-600); }
@@ -305,6 +318,7 @@ input:focus, select:focus, textarea:focus {
 .btn-theme-site:hover { background: var(--color-site-700); border-color: var(--color-site-700); }
 
 .badge-theme-entity { background: var(--color-entity-100); color: var(--color-entity-700); }
+.badge-theme-person { background: var(--color-person-100); color: var(--color-person-700); }
 .badge-theme-physicalasset { background: var(--color-physicalasset-100); color: var(--color-physicalasset-700); }
 .badge-theme-dct { background: var(--color-dct-100); color: var(--color-dct-700); }
 .badge-theme-upload { background: var(--color-upload-100); color: var(--color-upload-700); }
@@ -312,6 +326,7 @@ input:focus, select:focus, textarea:focus {
 .badge-theme-site { background: var(--color-site-100); color: var(--color-site-700); }
 
 .page-stripe-entity { border-top: 4px solid var(--color-entity-500); }
+.page-stripe-person { border-top: 4px solid var(--color-person-500); }
 .page-stripe-physicalasset { border-top: 4px solid var(--color-physicalasset-500); }
 .page-stripe-dct { border-top: 4px solid var(--color-dct-500); }
 .page-stripe-upload { border-top: 4px solid var(--color-upload-500); }

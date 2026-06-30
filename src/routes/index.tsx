@@ -20,6 +20,9 @@ import EntityAssignGeoZone from '../pages/EntityAssignGeoZone';
 import EntityManage from '../pages/EntityManage';
 import EntityRegistry from '../pages/EntityRegistry';
 
+// Person pages (2 pages)
+import { PersonAssignment, PersonManagement } from '../pages/person';
+
 // Non-Entity pages (2 pages)
 import NonEntityAssignGeo from '../pages/NonEntityAssignGeo';
 import NonEntityManage from '../pages/NonEntityManage';
@@ -123,6 +126,15 @@ export const router = createBrowserRouter([
       {
         path: 'entity-manage',
         element: <EntityManage />,
+      },
+      // PERSON: 2 Pages
+      {
+        path: 'person-assign',
+        element: <PersonAssignment />,
+      },
+      {
+        path: 'person-manage',
+        element: <PersonManagement />,
       },
       // NON-ENTITY: 2 Pages
       {
