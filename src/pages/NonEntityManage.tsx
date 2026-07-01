@@ -131,7 +131,7 @@ export default function NonEntityManage() {
           onClick={() => setViewMode('active')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'active'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+               ? 'bg-nonentity-600 text-white shadow-lg shadow-nonentity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >

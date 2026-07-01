@@ -149,6 +149,7 @@ export interface RegistryCategory {
   name: string; // e.g. "Hospitals & Diagnostics"
   description: string;
   status?: "active" | "stopped";
+  entityType?: "entity" | "non-entity";
 }
 
 export interface RegistryType {
@@ -158,6 +159,7 @@ export interface RegistryType {
   name: string; // e.g. "Government Taluk Hospital"
   description: string;
   status?: "active" | "stopped";
+  entityType?: "entity" | "non-entity";
 }
 
 // Non-Entity in L1 DB
@@ -188,6 +190,12 @@ export interface NonEntity {
     assetProvider?: string;
     serviceProvider?: string;
   };
+}
+
+// Entity role flags
+export interface EntityRoles {
+  isAssetProvider: boolean;
+  isServiceProvider: boolean;
 }
 
 // Entity role — what kind of provider the entity is (pick one)
@@ -231,7 +239,7 @@ export interface ActiveEntity {
   createdAt: string;
   updatedAt: string;
   website_zone_entity_id?: string | null; // Associated Website Zone/Site ID
-  role: EntityRole;
+  roles: EntityRoles;
   linkedAssets?: string[]; // IDs of non-entities (assets) this entity owns/operates
 }
 
@@ -285,7 +293,7 @@ export interface StagingEntity {
   phone?: string;
   domain_code: string;
   category_id: string;
-  role: EntityRole;
+  roles: EntityRoles;
   status: 'pending' | 'approved' | 'rejected';
   uploadedAt: string;
 }

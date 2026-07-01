@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Plus, Building2, MapPin, Upload, CheckCircle, XCircle, AlertTriangle, FileText, Download } from "lucide-react";
-import { StagingEntity, StagingNonEntity, EntityRole, NonEntityRole } from "../types";
+import { StagingEntity, StagingNonEntity, EntityRole, NonEntityRole, EntityRoles } from "../types";
 import { Category } from "../data/domains";
 import { useData } from "../contexts/DataContext";
 import { parseCSV } from "../utils/csvParser";
@@ -65,12 +65,12 @@ function CSVUploadTab() {
           if (recordType === 'entity') {
             const name = record.entity_name?.trim();
             if (!name) { rowErrors.push(`Skipped row: entity_name is empty`); continue; }
-            await createStagingEntity({
+             await createStagingEntity({
               entity_name: name,
               phone: record.phone || undefined,
               domain_code: selectedDomain,
               category_id: selectedCategory,
-              role: 'physical-service-provider' as EntityRole,
+              roles: { isAssetProvider: false, isServiceProvider: true },
               status: 'pending',
             });
           } else {
@@ -341,6 +341,22 @@ export default function StagingAreaNew() {
   const entityDomains = domains.filter(d => d.entityType === 'entity' || !d.entityType);
   const nonEntityDomains = domains.filter(d => d.entityType === 'non-entity' || !d.entityType);
 
+  const entityRoles: EntityRoles = useMemo(() => {
+    switch (entityRole) {
+      case 'physical-asset-provider':
+      case 'non-physical-asset-provider':
+        return { isAssetProvider: true, isServiceProvider: false };
+      case 'physical-service-provider':
+      case 'non-physical-service-provider':
+        return { isAssetProvider: false, isServiceProvider: true };
+      case 'physical-goods-provider':
+      case 'non-physical-goods-provider':
+        return { isAssetProvider: true, isServiceProvider: true };
+      default:
+        return { isAssetProvider: false, isServiceProvider: true };
+    }
+  }, [entityRole]);
+
   const getEntityCategories = (): Category[] => {
     const domain = entityDomains.find(d => d.code === entityDomain);
     return domain?.categories || [];
@@ -361,7 +377,7 @@ export default function StagingAreaNew() {
       phone: entityPhone || undefined,
       domain_code: entityDomain,
       category_id: entityCategory,
-      role: entityRole,
+      roles: entityRoles,
       status: 'pending',
     });
     setEntityName('');
@@ -743,7 +759,8 @@ function ReviewSection({
                       <span className="px-3 py-1 bg-white border border-surface-200 text-surface-700 text-xs rounded-lg font-bold">{entity.category_id}</span>
                     </div>
                     <div className="flex gap-2 mt-2">
-                      <span className="px-2.5 py-1 bg-brand-100 text-brand-700 text-xs rounded-lg font-bold capitalize">{entity.role.replace(/-/g, ' ')}</span>
+                      <span className="px-3 py-1 bg-white border border-surface-200 text-surface-700 text-xs rounded-lg font-bold">{entity.domain_code}</span>
+                      <span className="px-3 py-1 bg-white border border-surface-200 text-surface-700 text-xs rounded-lg font-bold">{entity.category_id}</span>
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">

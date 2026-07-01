@@ -132,7 +132,7 @@ export default function EntityManage() {
           onClick={() => setViewMode('active')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'active'
-              ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20'
+              ? 'bg-entity-600 text-white shadow-lg shadow-entity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -158,7 +158,7 @@ export default function EntityManage() {
           onClick={() => setViewMode('active')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'active'
-              ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/20'
+              ? 'bg-entity-600 text-white shadow-lg shadow-entity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >

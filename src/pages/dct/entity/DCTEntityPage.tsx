@@ -3,213 +3,95 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
-import { Users, FolderTree, Scissors, Trash2, GitMerge, Edit, Lock, ChevronRight, Shield, History, RotateCcw, Archive } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Users, FolderTree, Scissors, Trash2, GitMerge, Edit, Lock, ChevronRight, Shield, RotateCcw, Archive, Plus, Search, X } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
-import { useAuth } from "../../../contexts/AuthContext";
-import type { DCTArchiveRecord } from "../../../types";
 
 type TabMode = "domains" | "categories" | "types" | "approval-queue" | "archive";
-type ManagementMode = "view" | "split-domain" | "convert-domain" | "merge-domain" | "modify-domain";
-
-interface SplitDomainForm {
-  code: string;
-  name: string;
-  categoryPks: string[];
-}
-
-interface MergeForm {
-  sourceIds: string[];
-  targetId: string;
-}
+type ManagementMode = "view" | "add" | "edit" | "split-domain" | "merge-domain" | "stop-domain";
 
 export default function DCTEntityPage() {
-  const { userRole } = useAuth();
   const { 
-    domains, 
-    categories, 
-    types,
-    pendingDctChanges,
-    dctArchive,
-    stopDomain,
-    splitDomain,
-    convertDomain,
-    mergeDomains,
-    modifyDomain,
-    submitForApproval,
-    approveDctChange,
-    rejectDctChange,
-    recoverArchivedDct,
-    permanentlyDeleteArchivedDct,
+    domains, categories, types,
+    pendingDctChanges, dctArchive,
+    addDomain, updateDomain, stopDomain,
+    addCategory, updateCategory, stopCategory,
+    addType, updateType, stopType,
+    splitDomain, convertDomain, mergeDomains, modifyDomain,
+    submitForApproval, approveDctChange, rejectDctChange,
+    recoverArchivedDct, permanentlyDeleteArchivedDct
   } = useData();
-
-  const isMasterAdmin = userRole === "master-admin";
-  const currentUser = "admin-user";
 
   const [activeTab, setActiveTab] = useState<TabMode>("domains");
   const [managementMode, setManagementMode] = useState<ManagementMode>("view");
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-  
-  const [splitNewDomains, setSplitNewDomains] = useState<SplitDomainForm[]>([]);
-  const [convertDomainName, setConvertDomainName] = useState<string>("");
-  const [convertDomainCode, setConvertDomainCode] = useState<string>("");
-  const [redirectDomain, setRedirectDomain] = useState<string>("");
-  const [mergeDomainsState, setMergeDomainsState] = useState<MergeForm>({ sourceIds: [], targetId: "" });
-  const [modifyDomainName, setModifyDomainName] = useState<string>("");
-  const [modifyDomainCode, setModifyDomainCode] = useState<string>("");
-  const [convertForm, setConvertForm] = useState<{ code: string; name: string }>({ code: "", name: "" });
-  const [convertMode, setConvertMode] = useState<"view" | "convert">("view");
+  const [selectedItem, setSelectedItem] = useState<{ id: string; type: "domain" | "category" | "type" } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const selectedDomainData = selectedDomain ? domains.find(d => d.code === selectedDomain) : undefined;
+  // Form states
+  const [domainForm, setDomainForm] = useState({ code: "", name: "", description: "" });
+  const [categoryForm, setCategoryForm] = useState({ pk: "", domainCode: "", name: "", description: "" });
+  const [typeForm, setTypeForm] = useState({ pk: "", categoryPk: "", name: "", description: "" });
+  const [editForm, setEditForm] = useState({ name: "", codeOrPk: "", parentId: "" });
 
-  useEffect(() => {
-    if (managementMode === "split-domain") {
-      setSplitNewDomains([{ code: "", name: "", categoryPks: [] }]);
+  const entityDomains = domains.filter(d => d.entityType === 'entity');
+  const entityCategories = categories.filter(c => c.entityType === 'entity');
+  const entityTypes = types.filter(t => t.entityType === 'entity');
+
+  const filteredDomains = searchTerm ? entityDomains.filter(d => 
+    d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    d.code.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : entityDomains;
+
+  const filteredCategories = searchTerm ? entityCategories.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.pk.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : entityCategories;
+
+  const filteredTypes = searchTerm ? entityTypes.filter(t =>
+    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    t.pk.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : entityTypes;
+
+  const handleAdd = async () => {
+    if (activeTab === "domains") {
+      await addDomain(domainForm as any);
+      setDomainForm({ code: "", name: "", description: "" });
+    } else if (activeTab === "categories") {
+      const newPk = `CAT-${categoryForm.domainCode}-${String(entityCategories.length + 1).padStart(3, '0')}`;
+      await addCategory({ ...categoryForm, pk: newPk, dctId: `DCT-CAT-${Date.now()}` } as any);
+      setCategoryForm({ pk: "", domainCode: "", name: "", description: "" });
+    } else if (activeTab === "types") {
+      const cat = entityCategories.find(c => c.pk === categoryForm.categoryPk);
+      if (!cat) return;
+      const newPk = `${cat.pk}-${String(entityTypes.length + 1).padStart(2, '0')}`;
+      await addType({ ...typeForm, pk: newPk, dctId: `DCT-TYP-${Date.now()}`, categoryPk: cat.pk } as any);
+      setTypeForm({ pk: "", categoryPk: "", name: "", description: "" });
     }
-  }, [managementMode]);
-
-  const handleStopDomain = async (code: string, targetCode?: string) => {
-    try {
-      if (isMasterAdmin) {
-        await stopDomain(code, targetCode);
-      } else {
-        const domain = domains.find(d => d.code === code);
-        await submitForApproval({
-          action: 'delete',
-          dctType: 'domain',
-          dctId: domain?.dctId || code,
-          oldValue: domain?.name || code,
-          newValue: targetCode || 'stopped',
-          description: `Domain '${domain?.name}' requested to be stopped${targetCode ? ` with redirect to ${targetCode}` : ''}`,
-          submittedBy: currentUser,
-        });
-      }
-      setRedirectDomain("");
-    } catch (err) {
-      console.error(err);
-    }
+    setManagementMode("view");
   };
 
-  const handleSplitDomain = async () => {
-    if (!selectedDomain) return;
-    const validDomains = splitNewDomains.filter((d) => d.code && d.name);
-    if (validDomains.length === 0) return;
-    try {
-      if (isMasterAdmin) {
-        await splitDomain(selectedDomain, validDomains);
-      } else {
-        const domain = domains.find(d => d.code === selectedDomain);
-        await submitForApproval({
-          action: 'split',
-          dctType: 'domain',
-          dctId: domain?.dctId || selectedDomain,
-          oldValue: domain?.name || selectedDomain,
-          newValue: validDomains.map(d => d.name).join(', '),
-          description: `Domain '${domain?.name}' requested to split into ${validDomains.length} domains`,
-          submittedBy: currentUser,
-        });
-      }
-      setManagementMode("view");
-      setSelectedDomain(null);
-    } catch (err) {
-      console.error(err);
+  const handleEdit = async () => {
+    if (!selectedItem) return;
+    
+    if (activeTab === "domains") {
+      const domain = entityDomains.find(d => d.code === selectedItem.id);
+      if (domain) await updateDomain(domain.dctId || selectedItem.id, { name: editForm.name });
+    } else if (activeTab === "categories") {
+      await updateCategory(selectedItem.id, { name: editForm.name });
+    } else if (activeTab === "types") {
+      await updateType(selectedItem.id, { name: editForm.name });
     }
+    setManagementMode("view");
+    setSelectedItem(null);
   };
 
-  const handleMergeDomains = async () => {
-    if (mergeDomainsState.sourceIds.length === 0 || !mergeDomainsState.targetId) return;
-    try {
-      if (isMasterAdmin) {
-        await mergeDomains(mergeDomainsState.sourceIds, mergeDomainsState.targetId);
-      } else {
-        await submitForApproval({
-          action: 'merge',
-          dctType: 'domain',
-          dctId: mergeDomainsState.sourceIds.join(','),
-          oldValue: mergeDomainsState.sourceIds.length.toString(),
-          newValue: mergeDomainsState.targetId,
-          description: `Merge ${mergeDomainsState.sourceIds.length} domains into target`,
-          submittedBy: currentUser,
-        });
-      }
-      setManagementMode("view");
-      setMergeDomainsState({ sourceIds: [], targetId: "" });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleModifyDomain = async () => {
-    if (!selectedDomain || !modifyDomainName) return;
-    try {
-      const domain = domains.find(d => d.code === selectedDomain);
-      if (isMasterAdmin) {
-        await modifyDomain(selectedDomain, modifyDomainName, modifyDomainCode || undefined);
-      } else {
-        await submitForApproval({
-          action: 'modify',
-          dctType: 'domain',
-          dctId: domain?.dctId || selectedDomain,
-          oldValue: domain?.name || selectedDomain,
-          newValue: modifyDomainName,
-          description: `Modify domain name/code`,
-          submittedBy: currentUser,
-        });
-      }
-      setManagementMode("view");
-      setSelectedDomain(null);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleConvertDomain = async () => {
-    if (!selectedDomain || !convertForm.code || !convertForm.name) return;
-    try {
-      if (isMasterAdmin) {
-        await convertDomain(selectedDomain, convertForm);
-      } else {
-        const domain = domains.find(d => d.code === selectedDomain);
-        await submitForApproval({
-          action: 'convert',
-          dctType: 'domain',
-          dctId: domain?.dctId || selectedDomain,
-          oldValue: domain?.name || selectedDomain,
-          newValue: convertForm.name,
-          description: `Domain '${domain?.name}' requested to convert to '${convertForm.name}' (${convertForm.code})`,
-          submittedBy: currentUser,
-        });
-      }
-      setManagementMode("view");
-      setSelectedDomain(null);
-      setConvertForm({ code: "", name: "" });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const toggleSourceSelection = (code: string) => {
-    const current = mergeDomainsState.sourceIds;
-    if (current.includes(code)) {
-      setMergeDomainsState({ ...mergeDomainsState, sourceIds: current.filter(id => id !== code) });
+  const handleStop = async (id: string, type: "domain" | "category" | "type") => {
+    if (type === "domain") {
+      await stopDomain(id);
+    } else if (type === "category") {
+      await stopCategory(id);
     } else {
-      setMergeDomainsState({ ...mergeDomainsState, sourceIds: [...current, code] });
-    }
-  };
-
-  const handleRecoverArchived = async (archiveId: string) => {
-    try {
-      await recoverArchivedDct(archiveId);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handlePermanentDelete = async (archiveId: string) => {
-    try {
-      await permanentlyDeleteArchivedDct(archiveId);
-    } catch (err) {
-      console.error(err);
+      await stopType(id);
     }
   };
 
@@ -223,242 +105,74 @@ export default function DCTEntityPage() {
               DCT Entity Admin
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Manage Domains, Categories, and Types for Service Providers (Entities)
+              Manage Domains, Categories, and Types for Service Providers
             </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {isMasterAdmin && (
-              <span className="text-xs font-medium text-purple-700 bg-purple-100 px-3 py-1 rounded-full flex items-center gap-1">
-                <Shield className="w-3 h-3" />
-                Master-Admin
-              </span>
-            )}
-            {!isMasterAdmin && (
-              <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                Admin (Approval Required)
-              </span>
-            )}
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
         <div className="flex border-b border-slate-200">
-          <button
-            onClick={() => setActiveTab("domains")}
-            className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${
-              activeTab === "domains"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <FolderTree className="w-4 h-4 inline mr-2" />
-            Domains ({domains.length})
+          <button onClick={() => setActiveTab("domains")} className={`flex-1 px-4 py-3 text-sm font-bold ${activeTab === "domains" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600"}`}>
+            <FolderTree className="w-4 h-4 inline mr-1" /> Domains ({entityDomains.length})
           </button>
-          <button
-            onClick={() => setActiveTab("categories")}
-            className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${
-              activeTab === "categories"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <ChevronRight className="w-4 h-4 inline mr-2" />
-            Categories ({categories.length})
+          <button onClick={() => setActiveTab("categories")} className={`flex-1 px-4 py-3 text-sm font-bold ${activeTab === "categories" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600"}`}>
+            <ChevronRight className="w-4 h-4 inline mr-1" /> Categories ({entityCategories.length})
           </button>
-          <button
-            onClick={() => setActiveTab("types")}
-            className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${
-              activeTab === "types"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <ChevronRight className="w-4 h-4 inline mr-2 rotate-90" />
-            Types ({types.length})
+          <button onClick={() => setActiveTab("types")} className={`flex-1 px-4 py-3 text-sm font-bold ${activeTab === "types" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600"}`}>
+            <ChevronRight className="w-4 h-4 inline mr-1 rotate-90" /> Types ({entityTypes.length})
           </button>
-          <button
-            onClick={() => setActiveTab("approval-queue")}
-            className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${
-              activeTab === "approval-queue"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <Lock className="w-4 h-4 inline mr-2" />
-            Approval Queue ({pendingDctChanges?.filter(c => c.status === 'pending').length || 0})
+          <button onClick={() => setActiveTab("approval-queue")} className={`flex-1 px-4 py-3 text-sm font-bold ${activeTab === "approval-queue" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600"}`}>
+            <Lock className="w-4 h-4 inline mr-1" /> Approval Queue
           </button>
-          <button
-            onClick={() => setActiveTab("archive")}
-            className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${
-              activeTab === "archive"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <Archive className="w-4 h-4 inline mr-2" />
-            Archive ({dctArchive?.length || 0})
+          <button onClick={() => setActiveTab("archive")} className={`flex-1 px-4 py-3 text-sm font-bold ${activeTab === "archive" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-600"}`}>
+            <Archive className="w-4 h-4 inline mr-1" /> Archive
           </button>
         </div>
 
         <div className="p-6">
+          {/* Search bar for all tabs */}
+          {(activeTab === "domains" || activeTab === "categories" || activeTab === "types") && (
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={`Search ${activeTab}...`}
+                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg"
+              />
+            </div>
+          )}
+
           {activeTab === "domains" && (
             <div className="space-y-4">
-              <div className="flex gap-2 mb-3">
-                <button 
-                  onClick={() => setManagementMode("merge-domain")} 
-                  className="px-3 py-1 bg-purple-600 text-white rounded text-sm flex items-center gap-1"
-                >
-                  <GitMerge className="w-3 h-3" /> Merge
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-bold">Domains</h2>
+                <button onClick={() => setManagementMode("add")} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm flex items-center gap-1">
+                  <Plus className="w-3 h-3" /> Add Domain
                 </button>
               </div>
 
-              {managementMode === "merge-domain" && (
-                <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 mb-4">
-                  <h3 className="text-lg font-bold text-purple-900 mb-4">Merge Domains</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs text-purple-700 mb-2">Select source domains (click to toggle):</p>
-                      <div className="flex flex-wrap gap-2">
-                        {domains.map((d) => (
-                          <button
-                            key={d.dctId}
-                            onClick={() => toggleSourceSelection(d.code)}
-                            className={`px-2 py-1 text-xs rounded ${
-                              mergeDomainsState.sourceIds.includes(d.code)
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {d.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <select
-                        value={mergeDomainsState.targetId}
-                        onChange={(e) => setMergeDomainsState({ ...mergeDomainsState, targetId: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-300 rounded"
-                      >
-                        <option value="">Select target domain</option>
-                        {domains.map((d) => (
-                          <option key={d.dctId} value={d.code}>{d.name} ({d.code})</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <button onClick={handleMergeDomains} className="px-3 py-1 bg-purple-600 text-white rounded text-sm" disabled={mergeDomainsState.sourceIds.length === 0 || !mergeDomainsState.targetId}>
-                        Merge
-                      </button>
-                      <button onClick={() => setManagementMode("view")} className="px-3 py-1 bg-slate-300 text-slate-700 rounded text-sm">
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {domains.map((domain) => (
-                  <div key={domain.dctId || domain.code} className="bg-white rounded-xl border border-slate-200 p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold text-slate-900">{domain.name}</h3>
-                        <p className="text-xs text-slate-500 font-mono">{domain.code}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 rounded ${domain.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`}>
-                          {domain.status}
-                        </span>
-                        <button
-                          onClick={() => {
-                            setSelectedDomain(domain.code);
-                            setManagementMode("split-domain");
-                          }}
-                          className="p-1.5 bg-amber-50 text-amber-600 rounded hover:bg-amber-100"
-                          title="Split Domain"
-                        >
-                          <Scissors className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedDomain(domain.code);
-                            setManagementMode("modify-domain");
-                          }}
-                          className="p-1.5 bg-cyan-50 text-cyan-600 rounded hover:bg-cyan-100"
-                          title="Modify Domain"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedDomain(domain.code);
-                            setConvertMode("convert");
-                          }}
-                          className="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
-                          title="Convert Domain"
-                        >
-                          <FolderTree className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (redirectDomain) {
-                              handleStopDomain(domain.code, redirectDomain);
-                            } else {
-                              handleStopDomain(domain.code);
-                            }
-                          }}
-                          className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100"
-                          title="Stop Domain"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    {managementMode !== "view" && selectedDomain === domain.code && (
-                      <div className="mt-3">
-                        <select
-                          value={redirectDomain}
-                          onChange={(e) => setRedirectDomain(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded text-sm"
-                        >
-                          <option value="">Select redirect (optional)</option>
-                          {domains.filter((d) => d.code !== domain.code).map((d) => (
-                            <option key={d.dctId} value={d.code}>
-                              {d.name} ({d.code})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {managementMode === "modify-domain" && selectedDomainData && (
-                <div className="bg-cyan-50 border border-cyan-200 rounded-xl p-6 mt-4">
-                  <h3 className="text-lg font-bold text-cyan-900 mb-4">Modify Domain: {selectedDomainData.name}</h3>
-                  <div className="grid grid-cols-2 gap-3">
+              {managementMode === "add" && (
+                <div className="bg-slate-50 border rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
                     <input
-                      type="text"
-                      placeholder="New Code (optional)"
-                      value={modifyDomainCode}
-                      onChange={(e) => setModifyDomainCode(e.target.value)}
+                      placeholder="Domain Code"
+                      value={domainForm.code}
+                      onChange={(e) => setDomainForm({ ...domainForm, code: e.target.value })}
                       className="px-3 py-2 border border-slate-300 rounded"
                     />
                     <input
-                      type="text"
-                      placeholder="New Name"
-                      value={modifyDomainName}
-                      onChange={(e) => setModifyDomainName(e.target.value)}
+                      placeholder="Domain Name"
+                      value={domainForm.name}
+                      onChange={(e) => setDomainForm({ ...domainForm, name: e.target.value })}
                       className="px-3 py-2 border border-slate-300 rounded"
                     />
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <button onClick={handleModifyDomain} className="px-3 py-1 bg-cyan-600 text-white rounded text-sm" disabled={!modifyDomainName}>
-                      Modify
+                  <div className="flex gap-2">
+                    <button onClick={handleAdd} disabled={!domainForm.code || !domainForm.name} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50">
+                      Add
                     </button>
                     <button onClick={() => setManagementMode("view")} className="px-3 py-1 bg-slate-300 text-slate-700 rounded text-sm">
                       Cancel
@@ -467,106 +181,172 @@ export default function DCTEntityPage() {
                 </div>
               )}
 
-              {convertMode === "convert" && selectedDomain && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-4">
-                  <h3 className="text-lg font-bold text-blue-900 mb-4">Convert Domain: {domains.find(d => d.code === selectedDomain)?.name}</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="New Domain Code"
-                      value={convertForm.code}
-                      onChange={(e) => setConvertForm({ ...convertForm, code: e.target.value })}
-                      className="px-3 py-2 border border-slate-300 rounded"
-                    />
-                    <input
-                      type="text"
-                      placeholder="New Domain Name"
-                      value={convertForm.name}
-                      onChange={(e) => setConvertForm({ ...convertForm, name: e.target.value })}
-                      className="px-3 py-2 border border-slate-300 rounded"
-                    />
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredDomains.map(domain => (
+                  <div key={domain.dctId || domain.code} className="border rounded-lg p-3 hover:bg-slate-50">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-medium">{domain.name}</h3>
+                        <p className="text-xs font-mono text-slate-500">{domain.code}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setSelectedItem({ id: domain.code, type: "domain" }); setManagementMode("edit"); }} className="p-1 text-slate-600 hover:text-indigo-600">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleStop(domain.code, "domain")} className="p-1 text-slate-600 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <button onClick={handleConvertDomain} className="px-3 py-1 bg-blue-600 text-white rounded text-sm" disabled={!convertForm.code || !convertForm.name}>
-                      Convert
-                    </button>
-                    <button onClick={() => { setConvertMode("view"); setConvertForm({ code: "", name: "" }); }} className="px-3 py-1 bg-slate-300 text-slate-700 rounded text-sm">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
+                ))}
+                {filteredDomains.length === 0 && <p className="text-center py-8 text-slate-500">No domains found</p>}
+              </div>
             </div>
           )}
 
           {activeTab === "categories" && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 mb-3">Entity Categories</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {categories.map((category) => (
-                  <div key={category.dctId} className="border border-slate-200 rounded-lg p-3">
-                    <h4 className="font-medium text-slate-900 text-sm">{category.name}</h4>
-                    <p className="text-xs text-slate-500 font-mono">{category.pk}</p>
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-bold">Categories</h2>
+                <button onClick={() => setManagementMode("add")} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm flex items-center gap-1">
+                  <Plus className="w-3 h-3" /> Add Category
+                </button>
+              </div>
+
+              {managementMode === "add" && (
+                <div className="bg-slate-50 border rounded-lg p-4">
+                  <div className="space-y-3 mb-3">
+                    <select
+                      value={categoryForm.domainCode}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, domainCode: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded"
+                    >
+                      <option value="">Select Domain</option>
+                      {entityDomains.map(d => <option key={d.code} value={d.code}>{d.name} ({d.code})</option>)}
+                    </select>
+                    <input
+                      placeholder="Category Name"
+                      value={categoryForm.name}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handleAdd} disabled={!categoryForm.domainCode || !categoryForm.name} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50">
+                      Add
+                    </button>
+                    <button onClick={() => setManagementMode("view")} className="px-3 py-1 bg-slate-300 text-slate-700 rounded text-sm">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredCategories.map(cat => (
+                  <div key={cat.pk} className="border rounded-lg p-3 hover:bg-slate-50">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-medium">{cat.name}</h3>
+                        <p className="text-xs font-mono text-slate-500">{cat.pk}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setSelectedItem({ id: cat.pk, type: "category" }); setManagementMode("edit"); }} className="p-1 text-slate-600 hover:text-indigo-600">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleStop(cat.pk, "category")} className="p-1 text-slate-600 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
+                {filteredCategories.length === 0 && <p className="text-center py-8 text-slate-500">No categories found</p>}
               </div>
             </div>
           )}
 
           {activeTab === "types" && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 mb-3">Entity Types</h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                {types.map((type) => (
-                  <div key={type.dctId} className="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                    <h5 className="font-medium text-slate-900 text-xs">{type.name}</h5>
-                    <p className="text-xs text-slate-500 font-mono">{type.pk}</p>
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-bold">Types</h2>
+                <button onClick={() => setManagementMode("add")} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm flex items-center gap-1">
+                  <Plus className="w-3 h-3" /> Add Type
+                </button>
+              </div>
+
+              {managementMode === "add" && (
+                <div className="bg-slate-50 border rounded-lg p-4">
+                  <div className="space-y-3 mb-3">
+                    <select
+                      value={typeForm.categoryPk}
+                      onChange={(e) => setTypeForm({ ...typeForm, categoryPk: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded"
+                    >
+                      <option value="">Select Category</option>
+                      {entityCategories.map(c => <option key={c.pk} value={c.pk}>{c.name} ({c.pk})</option>)}
+                    </select>
+                    <input
+                      placeholder="Type Name"
+                      value={typeForm.name}
+                      onChange={(e) => setTypeForm({ ...typeForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={handleAdd} disabled={!typeForm.categoryPk || !typeForm.name} className="px-3 py-1 bg-indigo-600 text-white rounded text-sm disabled:opacity-50">
+                      Add
+                    </button>
+                    <button onClick={() => setManagementMode("view")} className="px-3 py-1 bg-slate-300 text-slate-700 rounded text-sm">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredTypes.map(type => (
+                  <div key={type.pk} className="border rounded-lg p-3 hover:bg-slate-50">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-medium">{type.name}</h3>
+                        <p className="text-xs font-mono text-slate-500">{type.pk}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setSelectedItem({ id: type.pk, type: "type" }); setManagementMode("edit"); }} className="p-1 text-slate-600 hover:text-indigo-600">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleStop(type.pk, "type")} className="p-1 text-slate-600 hover:text-red-600">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
+                {filteredTypes.length === 0 && <p className="text-center py-8 text-slate-500">No types found</p>}
               </div>
             </div>
           )}
 
           {activeTab === "approval-queue" && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <h2 className="text-lg font-bold flex items-center gap-2">
                 <Lock className="w-5 h-5" />
-                {isMasterAdmin ? "Approval Queue (Master-Admin)" : "Pending Changes"}
+                Approval Queue
               </h2>
               {!pendingDctChanges || pendingDctChanges.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-8">No pending DCT changes</p>
+                <p className="text-center py-8 text-slate-500">No pending DCT changes</p>
               ) : (
-                <div className="space-y-3">
-                  {pendingDctChanges.filter(c => c.status === 'pending').map((change) => (
-                    <div key={change.id} className="border border-amber-200 bg-amber-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-amber-800 uppercase">
-                          {change.action} - {change.dctType}
-                        </span>
-                        <span className="text-xs text-amber-600">
-                          {change.submittedBy} • {new Date(change.submittedAt).toLocaleString()}
-                        </span>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {pendingDctChanges.filter(c => c.status === 'pending').map(change => (
+                    <div key={change.id} className="border rounded-lg p-4 bg-amber-50">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-xs font-bold uppercase text-amber-800">{change.action} - {change.dctType}</span>
+                        <span className="text-xs text-slate-500">{change.submittedBy}</span>
                       </div>
-                      <p className="text-sm text-slate-900">
-                        "{change.oldValue}" → "{change.newValue}"
-                      </p>
+                      <p className="text-sm">{change.oldValue} → {change.newValue}</p>
                       <p className="text-xs text-slate-600 mt-1">{change.description}</p>
-                      {isMasterAdmin && (
-                        <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => approveDctChange(change.id, "master-admin")}
-                            className="px-3 py-1 bg-green-600 text-white rounded text-xs font-bold"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => rejectDctChange(change.id, "master-admin")}
-                            className="px-3 py-1 bg-red-600 text-white rounded text-xs font-bold"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -576,46 +356,32 @@ export default function DCTEntityPage() {
 
           {activeTab === "archive" && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-bold flex items-center gap-2">
                 <Archive className="w-5 h-5" />
-                DCT Archive (Recovery Area)
+                Archive
               </h2>
               {!dctArchive || dctArchive.length === 0 ? (
-                <p className="text-sm text-slate-500 text-center py-8">No archived DCTs</p>
+                <p className="text-center py-8 text-slate-500">No archived DCTs</p>
               ) : (
                 <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200">
+                  <thead className="border-b">
+                    <tr>
                       <th className="text-left py-2">Type</th>
                       <th className="text-left py-2">Name</th>
-                      <th className="text-left py-2">Entities</th>
-                      <th className="text-left py-2">Non-Entities</th>
-                      <th className="text-left py-2">Archived</th>
                       <th className="text-left py-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {dctArchive.map((record: DCTArchiveRecord) => (
-                      <tr key={record.id} className="border-b border-slate-100">
+                    {dctArchive.map(record => (
+                      <tr key={record.id} className="border-b">
                         <td className="py-2 capitalize">{record.dctType}</td>
                         <td className="py-2">{record.originalName}</td>
-                        <td className="py-2">{record.entityCount}</td>
-                        <td className="py-2">{record.nonEntityCount}</td>
-                        <td className="py-2 text-xs text-slate-500">{record.archivedAt ? new Date(record.archivedAt).toLocaleDateString() : "-"}</td>
                         <td className="py-2">
                           <div className="flex gap-1">
-                            <button
-                              onClick={() => recoverArchivedDct(record.id)}
-                              className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                              title="Recover"
-                            >
+                            <button onClick={() => recoverArchivedDct(record.id)} className="p-1 text-green-600 hover:bg-green-50 rounded">
                               <RotateCcw className="w-3 h-3" />
                             </button>
-                            <button
-                              onClick={() => permanentlyDeleteArchivedDct(record.id)}
-                              className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                              title="Delete Permanently"
-                            >
+                            <button onClick={() => permanentlyDeleteArchivedDct(record.id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
                               <Trash2 className="w-3 h-3" />
                             </button>
                           </div>

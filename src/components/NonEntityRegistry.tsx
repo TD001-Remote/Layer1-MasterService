@@ -46,7 +46,7 @@ export default function NonEntityRegistry() {
           </button>
           <button 
             onClick={() => setShowAddNonEntity(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-nonentity-600 text-white rounded-lg text-xs font-bold hover:bg-nonentity-700 shadow-sm"
           >
             <Plus size={14} /> Add Non-Entity
           </button>
@@ -89,7 +89,7 @@ export default function NonEntityRegistry() {
                           }
                         }
                       }}
-                      className={`px-2 py-1 border text-[10px] font-bold uppercase tracking-wider shadow-sm rounded-lg transition-all ${showStopped ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' : 'border-rose-200 text-rose-600 hover:bg-rose-50'}`}
+                      className={`px-2 py-1 border text-[10px] font-bold uppercase tracking-wider shadow-sm rounded-lg transition-all ${showStopped ? 'border-nonentity-200 text-nonentity-600 hover:bg-nonentity-50' : 'border-rose-200 text-rose-600 hover:bg-rose-50'}`}
                     >
                       {showStopped ? "Recover" : "Stop Non-Entity"}
                     </button>
@@ -142,7 +142,7 @@ export default function NonEntityRegistry() {
                     setShowAddNonEntity(false); 
                   } 
                 }} 
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm"
+                className="px-4 py-2 bg-nonentity-600 text-white rounded-lg text-sm font-bold hover:bg-nonentity-700 shadow-sm"
               >
                 Register Non-Entity
               </button>

@@ -49,7 +49,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   core: 'var(--color-brand-600)',
   entity: 'var(--color-entity-600)',
   person: 'var(--color-person-600)',
-  nonentity: 'var(--color-physicalasset-600)',
+  nonentity: 'var(--color-nonentity-600)',
   dct: 'var(--color-dct-600)',
   geo: 'var(--color-geo-600)',
   site: 'var(--color-site-600)',

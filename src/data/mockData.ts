@@ -366,7 +366,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Medicinal",
     description: "Multi-Specialty & Rural Hospitals, Local Clinics, Pharmacies, and Diagnostics",
     color: "emerald",
-    icon: "Heart"
+    icon: "Heart",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-002",
@@ -374,7 +375,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Education",
     description: "Schools, Arts & Science Colleges, Rural Tuition Centers, and Public Libraries",
     color: "blue",
-    icon: "GraduationCap"
+    icon: "GraduationCap",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-003",
@@ -382,7 +384,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Administrative",
     description: "Strictly regulatory units: Taluk Offices, local Magistrate Courts, Police and Post Stations",
     color: "indigo",
-    icon: "Briefcase"
+    icon: "Briefcase",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-004",
@@ -390,7 +393,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Finance",
     description: "Cooperative banks, insurance affiliates, rural ATMs, and micro-credit portals",
     color: "amber",
-    icon: "Coins"
+    icon: "Coins",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-005",
@@ -398,7 +402,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Agriculture",
     description: "Seed/Fertilizer storage depots, wholesale Rice Mills, and Cold Storage silos",
     color: "green",
-    icon: "Sprout"
+    icon: "Sprout",
+    entityType: undefined
   },
   {
     dctId: "DCT-DOM-006",
@@ -406,7 +411,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Industrial",
     description: "Small-scale weaving plants, engineering workshops, and agro-processing factories",
     color: "cyan",
-    icon: "Factory"
+    icon: "Factory",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-007",
@@ -414,7 +420,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Retail",
     description: "Bazaar stalls, textile houses, hardware providers, and local jewelry merchants",
     color: "violet",
-    icon: "ShoppingBag"
+    icon: "ShoppingBag",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-008",
@@ -422,7 +429,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Food & Bev",
     description: "Traditional mess outlets, hotels, bakeries, tea shops, and event caterers",
     color: "rose",
-    icon: "Utensils"
+    icon: "Utensils",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-009",
@@ -430,7 +438,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Sport/Well",
     description: "Wellness and martial arts circles, local gyms, stadiums, and yoga pads",
     color: "purple",
-    icon: "Smile"
+    icon: "Smile",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-010",
@@ -438,7 +447,8 @@ export const masterDomains: RegistryDomain[] = [
     name: "Transport",
     description: "Bus terminals, rail junctions, shuttle parks, post couriers, and fuel stations",
     color: "sky",
-    icon: "Bus"
+    icon: "Bus",
+    entityType: "entity"
   },
   {
     dctId: "DCT-DOM-011",
@@ -446,75 +456,76 @@ export const masterDomains: RegistryDomain[] = [
     name: "Tour/Heritage",
     description: "Ancient temples, heritage mosques, commemorative churches, historical sites & parks",
     color: "orange",
-    icon: "MapPin"
+    icon: "MapPin",
+    entityType: undefined
   }
 ];
 
 // 3.1 MASTER CATEGORIES (Grouping domains under specific categories)
 export const masterCategories: RegistryCategory[] = [
-  { dctId: "DCT-CAT-001", pk: "CAT-MED-101", domainCode: "MED", name: "Hospitals & Diagnostics", description: "Government and private primary/secondary sanitarium centers and multi-specialty clinics" },
-  { dctId: "DCT-CAT-002", pk: "CAT-MED-103", domainCode: "MED", name: "Specialized Clinics", description: "Independent practitioner dental clinics, maternity labs, pediatrics and rural doctors" },
-  { dctId: "DCT-CAT-003", pk: "CAT-MED-105", domainCode: "MED", name: "Retail Pharmacies", description: "24/7 retail pharmacies, emergency dispensaries and wholesale medical distributors" },
+  { dctId: "DCT-CAT-001", pk: "CAT-MED-101", domainCode: "MED", name: "Hospitals & Diagnostics", description: "Government and private primary/secondary sanitarium centers and multi-specialty clinics", entityType: "entity" },
+  { dctId: "DCT-CAT-002", pk: "CAT-MED-103", domainCode: "MED", name: "Specialized Clinics", description: "Independent practitioner dental clinics, maternity labs, pediatrics and rural doctors", entityType: "entity" },
+  { dctId: "DCT-CAT-003", pk: "CAT-MED-105", domainCode: "MED", name: "Retail Pharmacies", description: "24/7 retail pharmacies, emergency dispensaries and wholesale medical distributors", entityType: "entity" },
   
-  { dctId: "DCT-CAT-004", pk: "CAT-EDU-201", domainCode: "EDU", name: "Academic Schools", description: "Primary, secondary and nursery educational institutions managed by public/private sector" },
-  { dctId: "DCT-CAT-005", pk: "CAT-EDU-202", domainCode: "EDU", name: "Higher Education", description: "Arts & science, polytechnic, engineering colleges and technical training institutes" },
-  { dctId: "DCT-CAT-006", pk: "CAT-EDU-203", domainCode: "EDU", name: "Public Libraries", description: "Government taluk libraries, community reading rooms and private archival setups" },
+  { dctId: "DCT-CAT-004", pk: "CAT-EDU-201", domainCode: "EDU", name: "Academic Schools", description: "Primary, secondary and nursery educational institutions managed by public/private sector", entityType: "entity" },
+  { dctId: "DCT-CAT-005", pk: "CAT-EDU-202", domainCode: "EDU", name: "Higher Education", description: "Arts & science, polytechnic, engineering colleges and technical training institutes", entityType: "entity" },
+  { dctId: "DCT-CAT-006", pk: "CAT-EDU-203", domainCode: "EDU", name: "Public Libraries", description: "Government taluk libraries, community reading rooms and private archival setups", entityType: "entity" },
 
-  { dctId: "DCT-CAT-007", pk: "CAT-ADM-301", domainCode: "ADM", name: "Judicial & Administration Complexes", description: "Taluk offices, magistrate court arenas, administrative government blocks" },
-  { dctId: "DCT-CAT-008", pk: "CAT-ADM-315", domainCode: "ADM", name: "Legal Consulting Units", description: "Attorney chambers, notary public hubs, legal aid advocates and filing offices" },
+  { dctId: "DCT-CAT-007", pk: "CAT-ADM-301", domainCode: "ADM", name: "Judicial & Administration Complexes", description: "Taluk offices, magistrate court arenas, administrative government blocks", entityType: "entity" },
+  { dctId: "DCT-CAT-008", pk: "CAT-ADM-315", domainCode: "ADM", name: "Legal Consulting Units", description: "Attorney chambers, notary public hubs, legal aid advocates and filing offices", entityType: "entity" },
 
-  { dctId: "DCT-CAT-009", pk: "CAT-FIN-601", domainCode: "FIN", name: "Cooperative Banks", description: "Primary agricultural bank credit associations, rural cooperative funds and ATMs" },
-  { dctId: "DCT-CAT-010", pk: "CAT-FIN-602", domainCode: "FIN", name: "Insurance & Micro-Credit Portal", description: "Microfinance centers, small business credit nodes and LIC advisory desks" },
+  { dctId: "DCT-CAT-009", pk: "CAT-FIN-601", domainCode: "FIN", name: "Cooperative Banks", description: "Primary agricultural bank credit associations, rural cooperative funds and ATMs", entityType: "entity" },
+  { dctId: "DCT-CAT-010", pk: "CAT-FIN-602", domainCode: "FIN", name: "Insurance & Micro-Credit Portal", description: "Microfinance centers, small business credit nodes and LIC advisory desks", entityType: "entity" },
 
-  { dctId: "DCT-CAT-011", pk: "CAT-AGR-501", domainCode: "AGR", name: "Seeds & Farm Supplies Depot", description: "Government fertilizer depots, organic seed counters and wholesale pesticide suppliers" },
-  { dctId: "DCT-CAT-012", pk: "CAT-AGR-502", domainCode: "AGR", name: "Wholesale Processing Mills", description: "High capacity rice thrashing mills, paddy bulk warehousing, food processing silos" },
+  { dctId: "DCT-CAT-011", pk: "CAT-AGR-501", domainCode: "AGR", name: "Seeds & Farm Supplies Depot", description: "Government fertilizer depots, organic seed counters and wholesale pesticide suppliers", entityType: undefined },
+  { dctId: "DCT-CAT-012", pk: "CAT-AGR-502", domainCode: "AGR", name: "Wholesale Processing Mills", description: "High capacity rice thrashing mills, paddy bulk warehousing, food processing silos", entityType: undefined },
 
-  { dctId: "DCT-CAT-013", pk: "CAT-IND-101", domainCode: "IND", name: "Agro-processing Factories", description: "Rice huller engineering workshops, textile loom plants, sub-urban weaving units" },
+  { dctId: "DCT-CAT-013", pk: "CAT-IND-101", domainCode: "IND", name: "Agro-processing Factories", description: "Rice huller engineering workshops, textile loom plants, sub-urban weaving units", entityType: "entity" },
 
-  { dctId: "DCT-CAT-014", pk: "CAT-RET-201", domainCode: "RET", name: "Bazaars & Grocery Depots", description: "Paddy wholesale shops, provisions hubs, wholesale vegetable stands" },
-  { dctId: "DCT-CAT-015", pk: "CAT-RET-250", domainCode: "RET", name: "Hardware Store Network", description: "Building materials, electrical wiring stalls, hardware accessories" },
-  { dctId: "DCT-CAT-016", pk: "CAT-RET-299", domainCode: "RET", name: "Apparel & Tailoring Stations", description: "Traditional saree weaving centers, designer tailors, dry-cleaning units" },
+  { dctId: "DCT-CAT-014", pk: "CAT-RET-201", domainCode: "RET", name: "Bazaars & Grocery Depots", description: "Paddy wholesale shops, provisions hubs, wholesale vegetable stands", entityType: "entity" },
+  { dctId: "DCT-CAT-015", pk: "CAT-RET-250", domainCode: "RET", name: "Hardware Store Network", description: "Building materials, electrical wiring stalls, hardware accessories", entityType: "entity" },
+  { dctId: "DCT-CAT-016", pk: "CAT-RET-299", domainCode: "RET", name: "Apparel & Tailoring Stations", description: "Traditional saree weaving centers, designer tailors, dry-cleaning units", entityType: "entity" },
 
-  { dctId: "DCT-CAT-017", pk: "CAT-FOO-401", domainCode: "FOO", name: "Sweets & Bakery Outlets", description: "Bakeries, traditional HALWA/sweet stalls, dairy products and juice spots" },
-  { dctId: "DCT-CAT-018", pk: "CAT-FOO-402", domainCode: "FOO", name: "Traditional Indian Mess", description: "Vegetarian feeding homes, non-veg messes, local tea shops and caterers" },
+  { dctId: "DCT-CAT-017", pk: "CAT-FOO-401", domainCode: "FOO", name: "Sweets & Bakery Outlets", description: "Bakeries, traditional HALWA/sweet stalls, dairy products and juice spots", entityType: "entity" },
+  { dctId: "DCT-CAT-018", pk: "CAT-FOO-402", domainCode: "FOO", name: "Traditional Indian Mess", description: "Vegetarian feeding homes, non-veg messes, local tea shops and caterers", entityType: "entity" },
 
-  { dctId: "DCT-CAT-019", pk: "CAT-SPO-801", domainCode: "SPO", name: "Wellness & Gymnasiums", description: "Kari/Silambam martial arts camps, bodybuilding centers, public playgrounds" },
+  { dctId: "DCT-CAT-019", pk: "CAT-SPO-801", domainCode: "SPO", name: "Wellness & Gymnasiums", description: "Kari/Silambam martial arts camps, bodybuilding centers, public playgrounds", entityType: "entity" },
 
-  { dctId: "DCT-CAT-020", pk: "CAT-TRP-801", domainCode: "TRP", name: "Transit Stands & Terminals", description: "Bus transit points, regional auto-rickshaw bays, shuttle service centers" },
+  { dctId: "DCT-CAT-020", pk: "CAT-TRP-801", domainCode: "TRP", name: "Transit Stands & Terminals", description: "Bus transit points, regional auto-rickshaw bays, shuttle service centers", entityType: "entity" },
 
-  { dctId: "DCT-CAT-021", pk: "CAT-TOU-701", domainCode: "TOU", name: "Ancient Temples & shrines", description: "Highly historic spiritual architectures governed by HR&CE or local Waqf / Dioceses" },
-  { dctId: "DCT-CAT-022", pk: "CAT-TOU-704", domainCode: "TOU", name: "Pilgrimage Sannidhi Halls", description: "Traditional choultries, pilgrimage marriage complexes, assembly halls" },
-  { dctId: "DCT-CAT-023", pk: "CAT-TOU-722", domainCode: "TOU", name: "Spiritual Ashrams & Parks", description: "Meditation centers, ashrams, sacred groves and archaeological parks" }
+  { dctId: "DCT-CAT-021", pk: "CAT-TOU-701", domainCode: "TOU", name: "Ancient Temples & shrines", description: "Highly historic spiritual architectures governed by HR&CE or local Waqf / Dioceses", entityType: undefined },
+  { dctId: "DCT-CAT-022", pk: "CAT-TOU-704", domainCode: "TOU", name: "Pilgrimage Sannidhi Halls", description: "Traditional choultries, pilgrimage marriage complexes, assembly halls", entityType: undefined },
+  { dctId: "DCT-CAT-023", pk: "CAT-TOU-722", domainCode: "TOU", name: "Spiritual Ashrams & Parks", description: "Meditation centers, ashrams, sacred groves and archaeological parks", entityType: undefined }
 ];
 
 // 3.2 MASTER TYPES (Classifications / precise business profiles within categories)
 export const masterTypes: RegistryType[] = [
-  { dctId: "DCT-TYP-001", pk: "TYP-MED-101-01", categoryPk: "CAT-MED-101", name: "Government Taluk Hospital", description: "Public state-run multi specialty hospital offering free medical outpatient clinics" },
-  { dctId: "DCT-TYP-002", pk: "TYP-MED-101-02", categoryPk: "CAT-MED-101", name: "Diagnostics Center", description: "Imaging labs, blood draw clinics, and private ultrasound diagnostics centers" },
-  { dctId: "DCT-TYP-003", pk: "TYP-MED-103-01", categoryPk: "CAT-MED-103", name: "Private Dental Practice", description: "Orthodontics, cosmetic dental surgery, and general oral cleaning suites" },
-  { dctId: "DCT-TYP-004", pk: "TYP-MED-103-02", categoryPk: "CAT-MED-103", name: "Rural General Practitioner Hub", description: "Family physicians, emergency pediatric checkups, and general consultation desks" },
-  { dctId: "DCT-TYP-005", pk: "TYP-MED-105-01", categoryPk: "CAT-MED-105", name: "24-Hour Retail Pharmacy", description: "Allopathy, homeopathy, and siddha medicines retailer operating all day" },
+  { dctId: "DCT-TYP-001", pk: "TYP-MED-101-01", categoryPk: "CAT-MED-101", name: "Government Taluk Hospital", description: "Public state-run multi specialty hospital offering free medical outpatient clinics", entityType: "entity" },
+  { dctId: "DCT-TYP-002", pk: "TYP-MED-101-02", categoryPk: "CAT-MED-101", name: "Diagnostics Center", description: "Imaging labs, blood draw clinics, and private ultrasound diagnostics centers", entityType: "entity" },
+  { dctId: "DCT-TYP-003", pk: "TYP-MED-103-01", categoryPk: "CAT-MED-103", name: "Private Dental Practice", description: "Orthodontics, cosmetic dental surgery, and general oral cleaning suites", entityType: "entity" },
+  { dctId: "DCT-TYP-004", pk: "TYP-MED-103-02", categoryPk: "CAT-MED-103", name: "Rural General Practitioner Hub", description: "Family physicians, emergency pediatric checkups, and general consultation desks", entityType: "entity" },
+  { dctId: "DCT-TYP-005", pk: "TYP-MED-105-01", categoryPk: "CAT-MED-105", name: "24-Hour Retail Pharmacy", description: "Allopathy, homeopathy, and siddha medicines retailer operating all day", entityType: "entity" },
 
-  { dctId: "DCT-TYP-006", pk: "TYP-ADM-301-01", categoryPk: "CAT-ADM-301", name: "Taluk Revenue Office Complex", description: "Administrative center for land registries, certificates, and surveyor deployments" },
-  { dctId: "DCT-TYP-007", pk: "TYP-ADM-315-01", categoryPk: "CAT-ADM-315", name: "Legal Counsel & Litigation Attorney", description: "Practicing advocate chambers dealing with property disputes and civil law" },
-  { dctId: "DCT-TYP-008", pk: "TYP-ADM-315-02", categoryPk: "CAT-ADM-315", name: "Notary Public & Document Writer", description: "Accredited stamp document drafter and physical deed writers" },
+  { dctId: "DCT-TYP-006", pk: "TYP-ADM-301-01", categoryPk: "CAT-ADM-301", name: "Taluk Revenue Office Complex", description: "Administrative center for land registries, certificates, and surveyor deployments", entityType: "entity" },
+  { dctId: "DCT-TYP-007", pk: "TYP-ADM-315-01", categoryPk: "CAT-ADM-315", name: "Legal Counsel & Litigation Attorney", description: "Practicing advocate chambers dealing with property disputes and civil law", entityType: "entity" },
+  { dctId: "DCT-TYP-008", pk: "TYP-ADM-315-02", categoryPk: "CAT-ADM-315", name: "Notary Public & Document Writer", description: "Accredited stamp document drafter and physical deed writers", entityType: "entity" },
 
-  { dctId: "DCT-TYP-009", pk: "TYP-AGR-501-01", categoryPk: "CAT-AGR-501", name: "Wholesale Seeds & Fertilizers Supplier", description: "Fertilizer storage depots, wholesale Rice seed providers" },
-  { dctId: "DCT-TYP-010", pk: "TYP-FIN-602-01", categoryPk: "CAT-FIN-602", name: "Micro-Credit Cooperative Affiliate", description: "Cooperative loans, gold lending portals, and crop insurance desk" },
+  { dctId: "DCT-TYP-009", pk: "TYP-AGR-501-01", categoryPk: "CAT-AGR-501", name: "Wholesale Seeds & Fertilizers Supplier", description: "Fertilizer storage depots, wholesale Rice seed providers", entityType: undefined },
+  { dctId: "DCT-TYP-010", pk: "TYP-FIN-602-01", categoryPk: "CAT-FIN-602", name: "Micro-Credit Cooperative Affiliate", description: "Cooperative loans, gold lending portals, and crop insurance desk", entityType: "entity" },
 
-  { dctId: "DCT-TYP-011", pk: "TYP-RET-201-01", categoryPk: "CAT-RET-201", name: "Provisions Store & Supermarket", description: "Wholesale and retail grains, pulses, and household grocery products" },
-  { dctId: "DCT-TYP-012", pk: "TYP-RET-250-01", categoryPk: "CAT-RET-250", name: "Retail Hardware Store", description: "Screws, steel rods, copper wire, paint buckets, and electrical panels" },
-  { dctId: "DCT-TYP-013", pk: "TYP-RET-299-01", categoryPk: "CAT-RET-299", name: "Custom Tailoring Workshop", description: "Saree designing, formal stitch crafting, and alterations" },
+  { dctId: "DCT-TYP-011", pk: "TYP-RET-201-01", categoryPk: "CAT-RET-201", name: "Provisions Store & Supermarket", description: "Wholesale and retail grains, pulses, and household grocery products", entityType: "entity" },
+  { dctId: "DCT-TYP-012", pk: "TYP-RET-250-01", categoryPk: "CAT-RET-250", name: "Retail Hardware Store", description: "Screws, steel rods, copper wire, paint buckets, and electrical panels", entityType: "entity" },
+  { dctId: "DCT-TYP-013", pk: "TYP-RET-299-01", categoryPk: "CAT-RET-299", name: "Custom Tailoring Workshop", description: "Saree designing, formal stitch crafting, and alterations", entityType: "entity" },
 
-  { dctId: "DCT-TYP-014", pk: "TYP-FOO-401-01", categoryPk: "CAT-FOO-401", name: "Sweets Station & Bakery Outlet", description: "Deeply fried savories, halwas, birthday cakes, and evening snacks" },
-  { dctId: "DCT-TYP-015", pk: "TYP-FOO-402-01", categoryPk: "CAT-FOO-402", name: "Traditional South Indian Mess", description: "Traditional rice plates, idli breakfasts, parotta dinners, and tea-shop" },
+  { dctId: "DCT-TYP-014", pk: "TYP-FOO-401-01", categoryPk: "CAT-FOO-401", name: "Sweets Station & Bakery Outlet", description: "Deeply fried savories, halwas, birthday cakes, and evening snacks", entityType: "entity" },
+  { dctId: "DCT-TYP-015", pk: "TYP-FOO-402-01", categoryPk: "CAT-FOO-402", name: "Traditional South Indian Mess", description: "Traditional rice plates, idli breakfasts, parotta dinners, and tea-shop", entityType: "entity" },
 
-  { dctId: "DCT-TYP-016", pk: "TYP-TRP-801-01", categoryPk: "CAT-TRP-801", name: "Sub-Urban Passenger Transit & Auto Stand", description: "Commuters hub and central regional autorickshaw stands" },
+  { dctId: "DCT-TYP-016", pk: "TYP-TRP-801-01", categoryPk: "CAT-TRP-801", name: "Sub-Urban Passenger Transit & Auto Stand", description: "Commuters hub and central regional autorickshaw stands", entityType: "entity" },
 
-  { dctId: "DCT-TYP-017", pk: "TYP-TOU-701-01", categoryPk: "CAT-TOU-701", name: "Ancient Shiva Sthalam (HR&CE Department)", description: "Major religious temple landmark operating under the HR&CE Act" },
-  { dctId: "DCT-TYP-018", pk: "TYP-TOU-701-03", categoryPk: "CAT-TOU-701", name: "Commemorative Sacred Structure / Church", description: "Landmark religious prayer spaces with visual heritage structures" },
-  { dctId: "DCT-TYP-019", pk: "TYP-TOU-704-01", categoryPk: "CAT-TOU-704", name: "Heritage Pilgrimage Assembly Hall", description: "Choultries and mandapams for pilgrims to assemble and stay" },
-  { dctId: "DCT-TYP-020", pk: "TYP-TOU-722-01", categoryPk: "CAT-TOU-722", name: "Spiritual Ashram & Meditation Center", description: "Secluded forest Ashrams, yoga pavilions and meditation halls" }
+  { dctId: "DCT-TYP-017", pk: "TYP-TOU-701-01", categoryPk: "CAT-TOU-701", name: "Ancient Shiva Sthalam (HR&CE Department)", description: "Major religious temple landmark operating under the HR&CE Act", entityType: undefined },
+  { dctId: "DCT-TYP-018", pk: "TYP-TOU-701-03", categoryPk: "CAT-TOU-701", name: "Commemorative Sacred Structure / Church", description: "Landmark religious prayer spaces with visual heritage structures", entityType: undefined },
+  { dctId: "DCT-TYP-019", pk: "TYP-TOU-704-01", categoryPk: "CAT-TOU-704", name: "Heritage Pilgrimage Assembly Hall", description: "Choultries and mandapams for pilgrims to assemble and stay", entityType: undefined },
+  { dctId: "DCT-TYP-020", pk: "TYP-TOU-722-01", categoryPk: "CAT-TOU-722", name: "Spiritual Ashram & Meditation Center", description: "Secluded forest Ashrams, yoga pavilions and meditation halls", entityType: undefined }
 ];
 
 // 4. SEED SITES (L1 primary data only)

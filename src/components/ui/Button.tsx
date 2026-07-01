@@ -27,11 +27,11 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center gap-2 font-extrabold rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]';
 
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-brand-600 hover:bg-brand-700 text-white focus:ring-brand-500 shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/25',
-    secondary: 'bg-surface-100 hover:bg-surface-200 text-surface-700 focus:ring-surface-400 border border-surface-200 hover:border-surface-300 shadow-sm',
+    primary: 'bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/25',
+    secondary: 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 focus:ring-neutral-400 border border-neutral-200 hover:border-neutral-300 shadow-sm',
     danger: 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 shadow-md shadow-rose-500/20 hover:shadow-lg',
-    ghost: 'hover:bg-surface-100 text-surface-700 focus:ring-surface-400',
-    outline: 'border-2 border-brand-600 text-brand-600 hover:bg-brand-50 focus:ring-brand-500 bg-transparent',
+    ghost: 'hover:bg-neutral-100 text-neutral-700 focus:ring-neutral-400',
+    outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 bg-transparent',
   };
 
   const sizeStyles: Record<ButtonSize, string> = {

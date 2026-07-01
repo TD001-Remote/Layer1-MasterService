@@ -99,7 +99,7 @@ export default function EntityRegistry() {
       <div className="bg-white rounded-2xl border border-surface-200 shadow-lg p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 text-indigo-700 rounded-xl shadow-sm">
+            <div className="p-3 bg-entity-100 text-entity-700 rounded-xl shadow-sm">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
@@ -125,7 +125,7 @@ export default function EntityRegistry() {
               <RefreshCw className={`w-5 h-5 ${isLoadingFb ? 'animate-spin text-brand-500' : ''}`} />
             </button>
             <div className="text-right pl-3 border-l border-surface-200">
-              <div className="text-2xl font-extrabold text-indigo-600 font-display">{activeEntities.length}</div>
+              <div className="text-2xl font-extrabold text-entity-600 font-display">{activeEntities.length}</div>
               <div className="text-[11px] text-surface-500 font-bold uppercase tracking-wider">Active Entities</div>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function EntityRegistry() {
           onClick={() => setViewMode('pending-assignment')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'pending-assignment'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+              ? 'bg-entity-600 text-white shadow-lg shadow-entity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -154,7 +154,7 @@ export default function EntityRegistry() {
           onClick={() => setViewMode('manage-records')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'manage-records'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+              ? 'bg-entity-600 text-white shadow-lg shadow-entity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -165,7 +165,7 @@ export default function EntityRegistry() {
           onClick={() => setViewMode('branch-operations')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'branch-operations'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+              ? 'bg-entity-600 text-white shadow-lg shadow-entity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -235,7 +235,7 @@ export default function EntityRegistry() {
                         
                         <button
                           onClick={() => handleAssignGeoZone(entity.id)}
-                          className="shrink-0 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-extrabold shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/25 transition-all active:scale-95 flex items-center gap-2"
+                          className="shrink-0 px-5 py-3 bg-entity-600 hover:bg-entity-700 text-white rounded-xl font-extrabold shadow-lg shadow-entity-500/20 hover:shadow-xl hover:shadow-entity-500/25 transition-all active:scale-95 flex items-center gap-2"
                         >
                           <MapPin className="w-4 h-4" />
                           Assign Geo/Zone
@@ -267,14 +267,14 @@ export default function EntityRegistry() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by name or phone..."
-                  className="w-full pl-11 pr-4 py-2.5 bg-white rounded-xl border border-surface-200 text-sm text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                   className="w-full pl-11 pr-4 py-2.5 bg-white rounded-xl border border-surface-200 text-sm text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-entity-200 focus:border-entity-500"
                 />
               </div>
                
                <select
                  value={selectedDomain}
                  onChange={(e) => setSelectedDomain(e.target.value)}
-                 className="px-4 py-2.5 bg-white rounded-xl border border-surface-200 text-sm text-surface-900 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                  className="px-4 py-2.5 bg-white rounded-xl border border-surface-200 text-sm text-surface-900 focus:outline-none focus:ring-2 focus:ring-entity-200 focus:border-entity-500"
                >
                  <option value="">All Domains</option>
                  {allDomainCodes.map(code => <option key={code} value={code}>{code}</option>)}
@@ -324,7 +324,7 @@ export default function EntityRegistry() {
                               <div className="flex justify-end gap-2">
                                 <button
                                   onClick={() => handleEdit(entity.entity_pk)}
-                                  className="p-2 text-surface-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all duration-150"
+                                  className="p-2 text-surface-500 hover:text-entity-600 hover:bg-entity-50 rounded-xl transition-all duration-150"
                                   title="Edit"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -372,10 +372,10 @@ export default function EntityRegistry() {
                   
                   return (
                     <div key={domainCode} className="border border-surface-200 rounded-xl overflow-hidden">
-                      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3.5 border-b border-indigo-100">
+                      <div className="bg-gradient-to-r from-entity-50 to-purple-50 px-5 py-3.5 border-b border-entity-100">
                         <div className="flex items-center justify-between">
                           <h4 className="font-extrabold text-surface-900 flex items-center gap-2 tracking-tight">
-                            <GitBranch className="w-4 h-4 text-indigo-600" />
+                            <GitBranch className="w-4 h-4 text-entity-600" />
                             {domain?.name || domainCode}
                           </h4>
                           <span className="text-sm text-surface-600 font-bold bg-white px-3 py-1 rounded-lg border border-surface-200">{entities.length} entities</span>
@@ -398,7 +398,7 @@ export default function EntityRegistry() {
                                 </div>
                                 <button
                                   onClick={() => handleMoveBranch(entity.entity_pk)}
-                                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-md shadow-indigo-500/20 transition-all active:scale-95"
+                                  className="px-4 py-2 bg-entity-600 hover:bg-entity-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-2 shadow-md shadow-entity-500/20 transition-all active:scale-95"
                                 >
                                   <GitBranch className="w-3.5 h-3.5" />
                                   Move Branch

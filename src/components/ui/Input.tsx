@@ -24,7 +24,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-xs font-extrabold text-surface-700 uppercase tracking-widest"
+          className="block text-xs font-extrabold text-neutral-700 uppercase tracking-widest"
         >
           {label}
         </label>
@@ -32,7 +32,7 @@ export function Input({
     
       <div className="relative group">
         {icon && (
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-surface-400 group-focus-within:text-brand-500 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-primary-500 transition-colors">
             {icon}
           </div>
         )}
@@ -41,8 +41,8 @@ export function Input({
           id={inputId}
           className={`w-full px-4 py-2.5 text-sm bg-white rounded-xl border outline-none transition-all duration-150 focus:ring-2 placeholder:font-medium ${
             error
-              ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200'
-              : 'border-surface-200 focus:border-brand-500 focus:ring-brand-100 hover:border-surface-300'
+               ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200'
+               : 'border-neutral-200 focus:border-primary-500 focus:ring-primary-100 hover:border-neutral-300'
           } ${icon ? 'pl-10' : ''} ${className}`}
           {...props}
         />
@@ -56,7 +56,7 @@ export function Input({
       )}
 
       {helperText && !error && (
-        <p className="text-xs text-surface-500 font-semibold pl-0.5">{helperText}</p>
+        <p className="text-xs text-neutral-500 font-semibold pl-0.5">{helperText}</p>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { Users, Edit, Trash2, RotateCcw, Search, ChevronLeft, RefreshCw, AlertCi
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import { Person, ActiveEntity, NonEntity } from "../../types";
+import { personApi } from "../../services/api";
 
 export default function PersonManagement() {
   const navigate = useNavigate();
@@ -133,7 +134,7 @@ export default function PersonManagement() {
           onClick={() => setViewMode('active')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'active'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+               ? 'bg-person-600 text-white shadow-lg shadow-person-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >

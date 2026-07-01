@@ -31,7 +31,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 const ROUTE_THEME: Record<string, string> = {
   '/entity': 'entity',
   '/person': 'person',
-  '/non-entity': 'physicalasset',
+  '/non-entity': 'nonentity',
   '/dct': 'dct',
   '/data-upload': 'upload',
   '/staging': 'upload',
@@ -48,14 +48,14 @@ function getTheme(pathname: string) {
 
 function getThemeGradient(theme: string) {
   const map: Record<string, string> = {
-    brand: 'from-brand-600 to-brand-700',
-    entity: 'from-orange-500 to-amber-600',
-    person: 'from-purple-500 to-violet-600',
-    nonentity: 'from-blue-500 to-indigo-600',
-    dct: 'from-emerald-500 to-teal-600',
-    upload: 'from-violet-500 to-purple-600',
-    geo: 'from-teal-500 to-cyan-600',
-    site: 'from-rose-500 to-pink-600',
+    brand: 'from-primary-600 to-primary-700',
+    entity: 'from-accent-entity to-orange-600',
+    person: 'from-accent-person to-violet-600',
+    nonentity: 'from-accent-physical to-indigo-600',
+    dct: 'from-accent-dct to-teal-600',
+    upload: 'from-primary-600 to-primary-700',
+    geo: 'from-accent-geo to-cyan-600',
+    site: 'from-accent-site to-rose-600',
   };
   return map[theme] || map.brand;
 }
@@ -82,8 +82,7 @@ export default function MainLayout() {
     { path: '/person-manage', icon: Users, label: 'Person Management', theme: 'person', shortcut: null },
     { path: '/non-entity-assign', icon: Home, label: 'Non-Entity Assignment', theme: 'nonentity', shortcut: '⌘N' },
     { path: '/non-entity-manage', icon: Home, label: 'Non-Entity Management', theme: 'nonentity', shortcut: null },
-    { path: '/dct-entity', icon: Users, label: 'DCT Entity Admin', theme: 'dct', shortcut: null },
-    { path: '/dct-non-entity', icon: Building2, label: 'DCT Non-Entity', theme: 'dct', shortcut: null },
+{ path: '/dct', icon: FolderTree, label: 'DCT Taxonomy', theme: 'dct', shortcut: null },
     { path: '/geography', icon: MapPin, label: 'Geography', theme: 'geo', shortcut: '⌘G' },
     { path: '/sites', icon: Globe, label: 'Sites', theme: 'site', shortcut: '⌘P' },
   ];
@@ -113,19 +112,19 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-100 font-sans">
+    <div className={`module-tint module-tint-${theme} min-h-screen flex flex-col bg-background font-sans`}>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-surface-200/80 sticky top-0 z-40 shadow-sm">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-neutral-200/80 sticky top-0 z-40 shadow-sm">
         <div className="flex items-center justify-between px-4 md:px-6 h-16">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg`}>
               <Workflow size={20} className="drop-shadow-sm" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-base font-extrabold tracking-tight text-surface-900 font-display leading-tight">
+              <h1 className="text-base font-extrabold tracking-tight text-neutral-900 font-display leading-tight">
                 TN & Puducherry
               </h1>
-              <p className="text-[11px] text-surface-500 font-semibold tracking-wide uppercase">
+              <p className="text-[11px] text-neutral-500 font-semibold tracking-wide uppercase">
                 L1 Registry Console
               </p>
             </div>
@@ -133,25 +132,25 @@ export default function MainLayout() {
 
           <div className="flex items-center gap-2 md:gap-3">
             <button
-              className="hidden md:flex p-2 text-surface-400 hover:text-surface-700 hover:bg-surface-100 rounded-lg transition-all"
+              className="hidden md:flex p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-all"
               title="Notifications"
             >
               <Bell size={18} />
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-surface-600 bg-surface-100 border border-surface-200 rounded-lg hover:bg-surface-200 transition-colors"
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-neutral-600 bg-neutral-100 border border-neutral-200 rounded-lg hover:bg-neutral-200 transition-colors"
             >
               <Command size={14} />
               <span>Dashboard</span>
             </button>
-            <div className="hidden lg:flex items-center gap-3 pl-3 border-l border-surface-200">
+            <div className="hidden lg:flex items-center gap-3 pl-3 border-l border-neutral-200">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${gradient} shadow-sm`}>
                 {getInitials(user?.email)}
               </div>
               <div className="text-xs">
-                <p className="font-semibold text-surface-800 truncate max-w-[140px]">{user?.email}</p>
-                <p className="text-surface-400 font-medium">{isMasterAdmin ? 'Master Admin' : 'Admin'}</p>
+                <p className="font-semibold text-neutral-800 truncate max-w-[140px]">{user?.email}</p>
+                <p className="text-neutral-400 font-medium">{isMasterAdmin ? 'Master Admin' : 'Admin'}</p>
               </div>
             </div>
             <button
@@ -165,7 +164,7 @@ export default function MainLayout() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors"
+              className="md:hidden p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
             >
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -174,7 +173,7 @@ export default function MainLayout() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-surface-200 bg-white/95 backdrop-blur-sm animate-fade-in">
+          <div className="md:hidden border-t border-neutral-200 bg-white/95 backdrop-blur-sm animate-fade-in">
             <nav className="px-3 py-3 space-y-1">
               {visibleNavItems.map((item) => (
                 <NavLink
@@ -196,13 +195,13 @@ export default function MainLayout() {
                   <span className="font-medium">{item.label}</span>
                 </NavLink>
               ))}
-              <div className="pt-3 mt-2 border-t border-surface-200 flex flex-col gap-2">
-                <div className="flex items-center gap-3 px-4 py-2.5 text-xs text-surface-500">
+              <div className="pt-3 mt-2 border-t border-neutral-200 flex flex-col gap-2">
+                <div className="flex items-center gap-3 px-4 py-2.5 text-xs text-neutral-500">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-br ${gradient}`}>
                     {getInitials(user?.email)}
                   </div>
                   <div>
-                    <p className="font-semibold text-surface-700 truncate max-w-[180px]">{user?.email}</p>
+                    <p className="font-semibold text-neutral-700 truncate max-w-[180px]">{user?.email}</p>
                   </div>
                 </div>
                 <button
@@ -220,7 +219,7 @@ export default function MainLayout() {
 
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <aside className={`hidden md:flex flex-col bg-white border-r border-surface-200 sticky top-16 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-64'}`} style={{ height: 'calc(100vh - 64px)' }}>
+        <aside className={`hidden md:flex flex-col bg-white border-r border-neutral-200 sticky top-16 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-64'}`} style={{ height: 'calc(100vh - 64px)' }}>
           <nav className="p-3 space-y-0.5">
             {visibleNavItems.map((item) => {
               const Icon = item.icon;
@@ -236,7 +235,7 @@ export default function MainLayout() {
                   })}
                   className={({ isActive }) =>
                     `group flex items-center ${sidebarCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-xl transition-all duration-150 text-sm relative ${
-                      isActive ? 'font-bold border' : 'font-medium text-surface-500 hover:text-surface-800 hover:bg-surface-50 border border-transparent'
+                      isActive ? 'font-bold border' : 'font-medium text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 border border-transparent'
                     } ${sidebarCollapsed ? 'px-0 py-3' : ''}`
                   }
                   title={sidebarCollapsed ? item.label : undefined}
@@ -244,7 +243,7 @@ export default function MainLayout() {
                   {({ isActive }) => (
                     <>
                       {isActive && (
-                        <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-${item.theme}-500`} />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full" style={{ backgroundColor: tc(item.theme, '500') }} />
                       )}
                       <Icon size={sidebarCollapsed ? 22 : 19} className={`${isActive ? '' : 'group-hover:scale-110 transition-transform duration-150'}`} />
                       {!sidebarCollapsed && (
@@ -260,10 +259,10 @@ export default function MainLayout() {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="mt-auto p-3 border-t border-surface-200">
+          <div className="mt-auto p-3 border-t border-neutral-200">
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="w-full flex items-center justify-center p-2 rounded-lg text-surface-400 hover:text-surface-700 hover:bg-surface-100 transition-colors"
+              className="w-full flex items-center justify-center p-2 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
               title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               <Menu size={18} className={sidebarCollapsed ? '' : 'rotate-180'} />
@@ -272,7 +271,7 @@ export default function MainLayout() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 bg-surface-100 overflow-auto min-h-0">
+        <main className="flex-1 bg-background overflow-auto min-h-0">
           <div className={`container-fluid section page-stripe-${theme} animate-fade-in`}>
             <ErrorBoundary>
               <Outlet />

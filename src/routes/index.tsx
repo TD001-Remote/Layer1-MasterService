@@ -9,8 +9,7 @@ import MainLayout from '../layouts/MainLayout';
 import Login from '../pages/auth/Login';
 import AdminSetup from '../pages/auth/AdminSetup';
 import DashboardNew from '../components/DashboardNew';
-import GeoZoneManager from '../components/GeoZoneManager';
-import AdvancedGeographyManager from '../pages/AdvancedGeographyManager';
+import GeographyPage from '../pages/geography/GeographyPage';
 import SiteProvisioner from '../components/SiteProvisioner';
 import StagingAreaNew from '../components/StagingAreaNew';
 import ErrorFallback from '../components/ErrorFallback';
@@ -28,16 +27,15 @@ import NonEntityAssignGeo from '../pages/NonEntityAssignGeo';
 import NonEntityManage from '../pages/NonEntityManage';
 import NonEntityRegistry from '../pages/NonEntityRegistry';
 
-// DCT - Separate Entity/Non-Entity Classification management
-import DCTEntityPage from '../pages/dct/entity/DCTEntityPage';
-import DCTNonEntityPage from '../pages/dct/non-entity/DCTNonEntityPage';
+// DCT - Unified Taxonomy management with entity/non-entity tabs
+import DCTPage from '../pages/dct/DCTPage';
 
 // Assignment pages (old - for specific staging links)
 import EntityAssignment from '../pages/EntityAssignment';
 import NonEntityAssignment from '../pages/NonEntityAssignment';
 
-// L1 to L2 Data Upload
-import DataUpload from '../pages/DataUpload';
+// L1 to L2 Data Upload (Modular: Entity, Non-Entity, Person, Site, Geo-Zone)
+import { DataUpload } from '../pages/data-upload';
 
 // Old pages (kept for backward compatibility during migration)
 import EntityDetails from '../pages/entities/EntityDetails';
@@ -83,11 +81,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'geography',
-        element: <AdvancedGeographyManager />,
-      },
-      {
-        path: 'geography-old',
-        element: <GeoZoneManager />,
+        element: <GeographyPage />,
       },
       {
         path: 'geography/:zoneId',
@@ -147,12 +141,8 @@ export const router = createBrowserRouter([
       },
       // DCT - Separate Entity/Non-Entity Classification pages
       {
-        path: 'dct-entity',
-        element: <DCTEntityPage />,
-      },
-      {
-        path: 'dct-non-entity',
-        element: <DCTNonEntityPage />,
+        path: 'dct',
+        element: <DCTPage />,
       },
       {
         path: 'entity-registry',

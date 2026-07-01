@@ -21,12 +21,12 @@ export function Card({
   };
 
   const hoverStyles = hover
-    ? 'hover:border-surface-300 hover:shadow-lg cursor-pointer'
+    ? 'hover:border-neutral-300 hover:shadow-lg cursor-pointer'
     : '';
 
   return (
     <div
-      className={`bg-white/90 backdrop-blur-sm rounded-2xl border border-surface-200 shadow-md ${paddingClasses[padding]} ${hoverStyles} transition-all duration-200 ${className}`}
+      className={`bg-white/90 backdrop-blur-sm rounded-2xl border border-neutral-200 shadow-md ${paddingClasses[padding]} ${hoverStyles} transition-all duration-200 ${className}`}
     >
       {children}
     </div>
@@ -51,13 +51,13 @@ export function CardHeader({
   return (
     <div className={`flex items-center justify-between ${className}`}>
       <div className="flex items-center gap-2.5">
-        {icon && <div className="text-brand-600 shrink-0">{icon}</div>}
+        {icon && <div className="text-primary-600 shrink-0">{icon}</div>}
         <div>
-          <h3 className="text-base font-extrabold text-surface-900 font-display tracking-tight">
+          <h3 className="text-base font-extrabold text-neutral-900 font-display tracking-tight">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-xs text-surface-500 font-semibold mt-0.5">
+            <p className="text-xs text-neutral-500 font-semibold mt-0.5">
               {subtitle}
             </p>
           )}

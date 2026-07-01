@@ -70,6 +70,13 @@ interface DataContextType {
   streets: Street[];
   substreets: SubStreet[];
   zoneRefs: ZoneRef[];
+  setStates: React.Dispatch<React.SetStateAction<GeoState[]>>;
+  setDistricts: React.Dispatch<React.SetStateAction<GeoDistrict[]>>;
+  setTaluks: React.Dispatch<React.SetStateAction<GeoTaluk[]>>;
+  setCities: React.Dispatch<React.SetStateAction<CityVillage[]>>;
+  setAreas: React.Dispatch<React.SetStateAction<Area[]>>;
+  setStreets: React.Dispatch<React.SetStateAction<Street[]>>;
+  setSubstreets: React.Dispatch<React.SetStateAction<SubStreet[]>>;
 
   // Sites
   sites: SetSite[];
@@ -102,9 +109,18 @@ interface DataContextType {
   refreshStreets: () => Promise<void>;
   getDistrictsByState: (stateId: string) => GeoDistrict[];
   getTaluksByDistrict: (districtId: string) => GeoTaluk[];
-  getCitiesByTaluk: (talukId: string) => CityVillage[];
+getCitiesByTaluk: (talukId: string) => CityVillage[];
+   addState: (name: string) => Promise<void>;
+   updateStateItem: (id: string, name: string) => Promise<void>;
+   deleteStateItem: (id: string, name: string) => Promise<void>;
+   addDistrict: (name: string, stateId: string) => Promise<void>;
+   updateDistrictItem: (id: string, name: string, stateId: string) => Promise<void>;
+   deleteDistrictItem: (id: string, name: string) => Promise<void>;
+   addTaluk: (name: string, districtId: string) => Promise<void>;
+   updateTalukItem: (id: string, name: string, districtId: string) => Promise<void>;
+   deleteTalukItem: (id: string, name: string) => Promise<void>;
 
-  // Actions - Sites
+   // Actions - Sites
   addSite: (site: SetSite) => Promise<void>;
   updateSite: (site: SetSite) => Promise<void>;
 
@@ -156,28 +172,25 @@ interface DataContextType {
 // Actions - Taxonomy
    addDomain: (domain: RegistryDomain) => Promise<void>;
    updateDomain: (domain: RegistryDomain) => Promise<void>;
-   stopDomain: (code: string, targetCode?: string) => Promise<void>;
+   stopDomain: (code: string, targetCode?: string, entityType?: "entity" | "non-entity") => Promise<void>;
    recoverDomain: (code: string) => Promise<void>;
 
    addCategory: (category: RegistryCategory) => Promise<void>;
    updateCategory: (category: RegistryCategory) => Promise<void>;
-   stopCategory: (pk: string, targetPk?: string) => Promise<void>;
+   stopCategory: (pk: string, targetPk?: string, entityType?: "entity" | "non-entity") => Promise<void>;
    recoverCategory: (pk: string) => Promise<void>;
 
    addType: (type: RegistryType) => Promise<void>;
    updateType: (type: RegistryType) => Promise<void>;
-   stopType: (pk: string, targetPk?: string) => Promise<void>;
+   stopType: (pk: string, targetPk?: string, entityType?: "entity" | "non-entity") => Promise<void>;
    recoverType: (pk: string) => Promise<void>;
 
-  redirectEntitiesFromDomain: (oldCode: string, newCode: string) => Promise<void>;
-  redirectNonEntitiesFromDomain: (oldCode: string, newCode: string) => Promise<void>;
-  redirectEntitiesFromCategory: (oldPk: string, newPk: string) => Promise<void>;
-  redirectNonEntitiesFromCategory: (oldPk: string, newPk: string) => Promise<void>;
-  redirectEntitiesFromType: (oldPk: string, newPk?: string) => Promise<void>;
-  redirectNonEntitiesFromType: (oldPk: string, newPk?: string) => Promise<void>;
-  splitDomain: (oldCode: string, newDomains: { code: string; name: string; categoryPks: string[] }[]) => Promise<void>;
-  splitCategory: (oldPk: string, newCategories: { pk: string; name: string; typePks: string[] }[]) => Promise<void>;
-  splitType: (oldPk: string, newTypes: { pk: string; name: string }[]) => Promise<void>;
+   redirectFromDomain: (oldCode: string, newCode: string, entityType?: "entity" | "non-entity") => Promise<void>;
+   redirectFromCategory: (oldPk: string, newPk: string, entityType?: "entity" | "non-entity") => Promise<void>;
+   redirectFromType: (oldPk: string, newPk?: string, entityType?: "entity" | "non-entity") => Promise<void>;
+   splitDomain: (oldCode: string, newDomains: { code: string; name: string; categoryPks: string[] }[], entityType?: "entity" | "non-entity") => Promise<void>;
+   splitCategory: (oldPk: string, newCategories: { pk: string; name: string; typePks: string[] }[], entityType?: "entity" | "non-entity") => Promise<void>;
+   splitType: (oldPk: string, newTypes: { pk: string; name: string }[], entityType?: "entity" | "non-entity") => Promise<void>;
 
   // DCT Change tracking
   dctChanges: DCTChangeRecord[];
@@ -185,14 +198,14 @@ interface DataContextType {
   clearDctChanges: () => void;
 
 // DCT Convert actions
-   convertDomain: (oldDctId: string, newDomain: { code: string; name: string }) => Promise<void>;
-   convertCategory: (oldDctId: string, newCategory: { pk: string; name: string }) => Promise<void>;
-   convertType: (oldDctId: string, newType: { pk: string; name: string }) => Promise<void>;
+   convertDomain: (oldDctId: string, newDomain: { code: string; name: string }, entityType?: "entity" | "non-entity") => Promise<void>;
+   convertCategory: (oldDctId: string, newCategory: { pk: string; name: string }, entityType?: "entity" | "non-entity") => Promise<void>;
+   convertType: (oldDctId: string, newType: { pk: string; name: string }, entityType?: "entity" | "non-entity") => Promise<void>;
 
    // DCT Merge actions
-   mergeDomains: (sourceCodes: string[], targetCode: string) => Promise<void>;
-   mergeCategories: (sourcePks: string[], targetPk: string) => Promise<void>;
-   mergeTypes: (sourcePks: string[], targetPk: string) => Promise<void>;
+    mergeDomains: (sourceCodes: string[], targetCode: string, entityType?: "entity" | "non-entity") => Promise<void>;
+    mergeCategories: (sourcePks: string[], targetPk: string, entityType?: "entity" | "non-entity") => Promise<void>;
+    mergeTypes: (sourcePks: string[], targetPk: string, entityType?: "entity" | "non-entity") => Promise<void>;
 
    // DCT Modify actions (name/code only, no id change)
    modifyDomain: (dctId: string, newName: string, newCode?: string) => Promise<void>;
@@ -225,9 +238,9 @@ export function DataProvider({ children }: DataProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Geographic data
-  const [states] = useState<GeoState[]>(seedStates);
-  const [districts] = useState<GeoDistrict[]>(seedDistricts);
-  const [taluks] = useState<GeoTaluk[]>(seedTaluks);
+  const [states, setStates] = useState<GeoState[]>(seedStates);
+  const [districts, setDistricts] = useState<GeoDistrict[]>(seedDistricts);
+  const [taluks, setTaluks] = useState<GeoTaluk[]>(seedTaluks);
   const [cities, setCities] = useState<CityVillage[]>([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [streets, setStreets] = useState<Street[]>([]);
@@ -313,17 +326,20 @@ export function DataProvider({ children }: DataProviderProps) {
     }
   }, [toast]);
 
-  // Initialize data from Firebase
-  useEffect(() => {
-    async function initFirebase() {
-      try {
-        setIsLoading(true);
+// Initialize data from Firebase
+   useEffect(() => {
+     async function initFirebase() {
+       try {
+         setIsLoading(true);
 
-        // Load geographic data
-        const citiesData = await geoApi.seedCities(seedCities);
-        const areasData = await geoApi.seedAreas(seedAreas);
-        const streetsData = await geoApi.seedStreets(seedStreets);
-        const substreetsData = await geoApi.seedSubstreets(seedSubstreets);
+         // Load geographic data
+         const statesData = await geoApi.seedStates(seedStates);
+         const districtsData = await geoApi.seedDistricts(seedDistricts);
+         const taluksData = await geoApi.seedTaluks(seedTaluks);
+         const citiesData = await geoApi.seedCities(seedCities);
+         const areasData = await geoApi.seedAreas(seedAreas);
+         const streetsData = await geoApi.seedStreets(seedStreets);
+         const substreetsData = await geoApi.seedSubstreets(seedSubstreets);
 
         const sitesData = await siteApi.seed(seedSites);
 
@@ -365,7 +381,8 @@ export function DataProvider({ children }: DataProviderProps) {
             status: 'active',
             createdAt: '2026-06-22T12:00:00Z',
             updatedAt: '2026-06-22T12:00:00Z',
-            linkedEntities: {}, // NEW: Added
+            linkedEntities: {},
+            role: 'physical-service',
           },
           {
             non_entity_pk: 'NENT-000002',
@@ -388,7 +405,8 @@ export function DataProvider({ children }: DataProviderProps) {
             status: 'active',
             createdAt: '2026-06-22T12:00:00Z',
             updatedAt: '2026-06-22T12:00:00Z',
-            linkedEntities: {}, // NEW: Added
+             linkedEntities: {}, // NEW: Added
+            role: 'physical-service',
           },
         ];
 
@@ -397,19 +415,22 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
          // Load persons
          const personsData = await personApi.getAll();
 
-         // Set all state
-         setCities(citiesData);
-         setAreas(areasData);
-         setStreets(streetsData);
-         setSubstreets(substreetsData);
-         setSites(sitesData);
-         setActiveEntities(entitiesData);
-         setPendingEntities(pendingData);
-         setDomains(domainsData);
-         setCategories(categoriesData);
-         setTypes(typesData);
-         setNonEntities(nonEntitiesData);
-         setPersons(personsData);
+// Set all state
+          setStates(statesData);
+          setDistricts(districtsData);
+          setTaluks(taluksData);
+          setCities(citiesData);
+          setAreas(areasData);
+          setStreets(streetsData);
+          setSubstreets(substreetsData);
+          setSites(sitesData);
+          setActiveEntities(entitiesData);
+          setPendingEntities(pendingData);
+          setDomains(domainsData);
+          setCategories(categoriesData);
+          setTypes(typesData);
+          setNonEntities(nonEntitiesData);
+          setPersons(personsData);
       } catch (err) {
         console.error('Firebase syncing error:', String(err).replace(/[\r\n]/g, ' '));
       } finally {
@@ -596,9 +617,119 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const getDistrictsByState = (stateId: string) => districts.filter(d => d.stateId === stateId);
+const getDistrictsByState = (stateId: string) => districts.filter(d => d.stateId === stateId);
   const getTaluksByDistrict = (districtId: string) => taluks.filter(t => t.districtId === districtId);
   const getCitiesByTaluk = (talukId: string) => cities.filter(c => c.talukId === talukId);
+
+  // Geo CRUD operations
+  const addState = async (name: string) => {
+    try {
+      const id = `GEO-${name.toUpperCase().replace(/\s+/g, '-')}`;
+      const newState: GeoState = { id, name };
+      await geoApi.createState(newState);
+      setStates((prev) => [...prev, newState]);
+      showToast('success', `State '${name}' added successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to add state.');
+    }
+  };
+
+  const updateStateItem = async (id: string, name: string) => {
+    try {
+      const updated = await geoApi.updateState(id, { name });
+      setStates((prev) => prev.map((s) => s.id === id ? updated : s));
+      showToast('success', `State updated successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to update state.');
+    }
+  };
+
+  const deleteStateItem = async (id: string, name: string) => {
+    try {
+      await geoApi.deleteState(id);
+      setStates((prev) => prev.filter((s) => s.id !== id));
+      showToast('success', `State '${name}' deleted successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to delete state.');
+    }
+  };
+
+  const addDistrict = async (name: string, stateId: string) => {
+    try {
+      const state = states.find(s => s.id === stateId);
+      if (!state) throw new Error('State not found');
+      const districtId = `${stateId}-${name.toUpperCase().replace(/\s+/g, '-')}`;
+      const newDistrict: GeoDistrict = { id: districtId, stateId, name };
+      await geoApi.createDistrict(newDistrict);
+      setDistricts((prev) => [...prev, newDistrict]);
+      showToast('success', `District '${name}' added successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to add district.');
+    }
+  };
+
+  const updateDistrictItem = async (id: string, name: string, stateId: string) => {
+    try {
+      const updated = await geoApi.updateDistrict(id, { name, stateId });
+      setDistricts((prev) => prev.map((d) => d.id === id ? updated : d));
+      showToast('success', `District updated successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to update district.');
+    }
+  };
+
+  const deleteDistrictItem = async (id: string, name: string) => {
+    try {
+      await geoApi.deleteDistrict(id);
+      setDistricts((prev) => prev.filter((d) => d.id !== id));
+      showToast('success', `District '${name}' deleted successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to delete district.');
+    }
+  };
+
+  const addTaluk = async (name: string, districtId: string) => {
+    try {
+      const district = districts.find(d => d.id === districtId);
+      if (!district) throw new Error('District not found');
+      const talukId = `${districtId}-${name.toUpperCase().replace(/\s+/g, '-')}`;
+      const newTaluk: GeoTaluk = { id: talukId, districtId, name };
+      await geoApi.createTaluk(newTaluk);
+      setTaluks((prev) => [...prev, newTaluk]);
+      showToast('success', `Taluk '${name}' added successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to add taluk.');
+    }
+  };
+
+  const updateTalukItem = async (id: string, name: string, districtId: string) => {
+    try {
+      const updated = await geoApi.updateTaluk(id, { name, districtId });
+      setTaluks((prev) => prev.map((t) => t.id === id ? updated : t));
+      showToast('success', `Taluk updated successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to update taluk.');
+    }
+  };
+
+  const deleteTalukItem = async (id: string, name: string) => {
+    try {
+      await geoApi.deleteTaluk(id);
+      setTaluks((prev) => prev.filter((t) => t.id !== id));
+      showToast('success', `Taluk '${name}' deleted successfully.`);
+    } catch (err) {
+      console.error(err);
+      showToast('warning', 'Failed to delete taluk.');
+    }
+  };
 
   // Site actions
   const addSite = async (newSite: SetSite) => {
@@ -768,7 +899,8 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             website_zone_entity_id: p.website_zone_entity_id || null,
-            linkedEntities: {}, // NEW: Default empty
+            linkedEntities: {},
+            role: 'physical-service',
           };
 
           await nonEntityApi.create(nonEntObj);
@@ -905,18 +1037,17 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const stopDomain = async (identifier: string, targetCode?: string) => {
+  const stopDomain = async (identifier: string, targetCode?: string, entityType?: "entity" | "non-entity") => {
     try {
       const dom = domains.find((d) => d.code === identifier || d.dctId === identifier);
       if (!dom) return;
       if (targetCode && targetCode !== dom.code) {
-        await redirectEntitiesFromDomain(dom.code, targetCode);
-        await redirectNonEntitiesFromDomain(dom.code, targetCode);
+        await redirectFromDomain(dom.code, targetCode, entityType);
       }
       await taxonomyApi.updateDomainStatus(dom.dctId, 'stopped');
       setDomains((prev) => prev.map((d) => (d.dctId === dom.dctId ? { ...d, status: 'stopped' } : d)));
-      const entityCount = activeEntities.filter(e => e.primary_domain === dom.code).length;
-      const nonEntityCount = nonEntities.filter(n => n.primary_domain === dom.code).length;
+      const entityCount = entityType === 'non-entity' ? 0 : activeEntities.filter(e => e.primary_domain === dom.code).length;
+      const nonEntityCount = entityType === 'entity' ? 0 : nonEntities.filter(n => n.primary_domain === dom.code).length;
       const targetDomain = targetCode ? domains.find(d => d.code === targetCode) : undefined;
       await logDctChange('delete', 'domain', dom.dctId, dom.name, 'stopped', `Domain '${dom.name}' set to stopped${targetDomain ? ` and redirected to '${targetDomain.name}'` : ''}.`, { entityCount, nonEntityCount, targetDctId: targetDomain?.dctId });
       const archiveRecord: DCTArchiveRecord = {
@@ -986,18 +1117,17 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const stopCategory = async (identifier: string, targetPk?: string) => {
+  const stopCategory = async (identifier: string, targetPk?: string, entityType?: "entity" | "non-entity") => {
     try {
       const cat = categories.find((c) => c.pk === identifier || c.dctId === identifier);
       if (!cat) return;
       if (targetPk && targetPk !== cat.pk) {
-        await redirectEntitiesFromCategory(cat.pk, targetPk);
-        await redirectNonEntitiesFromCategory(cat.pk, targetPk);
+        await redirectFromCategory(cat.pk, targetPk, entityType);
       }
       await taxonomyApi.updateCategoryStatus(cat.dctId, 'stopped');
       setCategories((prev) => prev.map((c) => (c.dctId === cat.dctId ? { ...c, status: 'stopped' } : c)));
-      const entityCount = activeEntities.filter(e => e.category_pk === cat.pk).length;
-      const nonEntityCount = nonEntities.filter(n => n.category_pk === cat.pk).length;
+      const entityCount = entityType === 'non-entity' ? 0 : activeEntities.filter(e => e.category_pk === cat.pk).length;
+      const nonEntityCount = entityType === 'entity' ? 0 : nonEntities.filter(n => n.category_pk === cat.pk).length;
       const targetCat = targetPk ? categories.find(c => c.pk === targetPk) : undefined;
       await logDctChange('delete', 'category', cat.dctId, cat.name, 'stopped', `Category '${cat.name}' set to stopped${targetCat ? ` and redirected to '${targetCat.name}'` : ''}.`, { entityCount, nonEntityCount, targetDctId: targetCat?.dctId });
       const archiveRecord: DCTArchiveRecord = {
@@ -1067,18 +1197,17 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const stopType = async (identifier: string, targetPk?: string) => {
+  const stopType = async (identifier: string, targetPk?: string, entityType?: "entity" | "non-entity") => {
     try {
       const typ = types.find((t) => t.pk === identifier || t.dctId === identifier);
       if (!typ) return;
       if (targetPk && targetPk !== typ.pk) {
-        await redirectEntitiesFromType(typ.pk, targetPk);
-        await redirectNonEntitiesFromType(typ.pk, targetPk);
+        await redirectFromType(typ.pk, targetPk, entityType);
       }
       await taxonomyApi.updateTypeStatus(typ.dctId, 'stopped');
       setTypes((prev) => prev.map((t) => (t.dctId === typ.dctId ? { ...t, status: 'stopped' } : t)));
-      const entityCount = activeEntities.filter(e => e.type_pk === typ.pk).length;
-      const nonEntityCount = nonEntities.filter(n => n.type_pk === typ.pk).length;
+      const entityCount = entityType === 'non-entity' ? 0 : activeEntities.filter(e => e.type_pk === typ.pk).length;
+      const nonEntityCount = entityType === 'entity' ? 0 : nonEntities.filter(n => n.type_pk === typ.pk).length;
       const targetType = targetPk ? types.find(t => t.pk === targetPk) : undefined;
       await logDctChange('delete', 'type', typ.dctId, typ.name, 'stopped', `Type '${typ.name}' set to stopped${targetType ? ` and redirected to '${targetType.name}'` : ''}.`, { entityCount, nonEntityCount, targetDctId: targetType?.dctId });
       const archiveRecord: DCTArchiveRecord = {
@@ -1121,123 +1250,121 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const redirectEntitiesFromDomain = async (oldCode: string, newCode: string) => {
+  const redirectFromDomain = async (oldCode: string, newCode: string, entityType?: "entity" | "non-entity") => {
     try {
       const newDomain = domains.find(d => d.code === newCode);
       if (!newDomain) throw new Error('Target domain not found');
-      setActiveEntities((prev) =>
-        prev.map((e) =>
-          e.primary_domain === oldCode ? { ...e, primary_domain: newCode } : e
-        )
-      );
-      setRegistryEntities((prev) =>
-        prev.map((e) =>
-          e.domain === oldCode ? { ...e, domain: newCode } : e
-        )
-      );
+      
+      const redirectEntities = entityType !== 'non-entity';
+      const redirectNonEntities = entityType !== 'entity';
+      
+      if (redirectEntities) {
+        setActiveEntities((prev) =>
+          prev.map((e) =>
+            e.primary_domain === oldCode ? { ...e, primary_domain: newCode } : e
+          )
+        );
+        setRegistryEntities((prev) =>
+          prev.map((e) =>
+            e.domain === oldCode ? { ...e, domain: newCode } : e
+          )
+        );
+      }
+      
+      if (redirectNonEntities) {
+        setNonEntities((prev) =>
+          prev.map((n) =>
+            n.primary_domain === oldCode ? { ...n, primary_domain: newCode } : n
+          )
+        );
+        setRegistryNonEntities((prev) =>
+          prev.map((n) =>
+            n.domain === oldCode ? { ...n, domain: newCode } : n
+          )
+        );
+      }
     } catch (err) {
       console.error(err);
-      showToast('warning', `Failed to redirect entities from domain '${oldCode}'.`);
+      showToast('warning', `Failed to redirect records from domain '${oldCode}'.`);
     }
   };
 
-  const redirectNonEntitiesFromDomain = async (oldCode: string, newCode: string) => {
-    try {
-      const newDomain = domains.find(d => d.code === newCode);
-      if (!newDomain) throw new Error('Target domain not found');
-      setNonEntities((prev) =>
-        prev.map((n) =>
-          n.primary_domain === oldCode ? { ...n, primary_domain: newCode } : n
-        )
-      );
-      setRegistryNonEntities((prev) =>
-        prev.map((n) =>
-          n.domain === oldCode ? { ...n, domain: newCode } : n
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      showToast('warning', `Failed to redirect non-entities from domain '${oldCode}'.`);
-    }
-  };
-
-  const redirectEntitiesFromCategory = async (oldPk: string, newPk: string) => {
-    try {
-      const newCategory = categories.find(c => c.pk === newPk);
-      if (!newCategory) throw new Error('Target category not found');
-      setActiveEntities((prev) =>
-        prev.map((e) =>
-          e.category_pk === oldPk ? { ...e, category_pk: newPk, category_name: newCategory.name } : e
-        )
-      );
-      setRegistryEntities((prev) =>
-        prev.map((e) =>
-          e.category === oldPk ? { ...e, category: newPk } : e
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      showToast('warning', `Failed to redirect entities from category '${oldPk}'.`);
-    }
-  };
-
-  const redirectNonEntitiesFromCategory = async (oldPk: string, newPk: string) => {
+  const redirectFromCategory = async (oldPk: string, newPk: string, entityType?: "entity" | "non-entity") => {
     try {
       const newCategory = categories.find(c => c.pk === newPk);
       if (!newCategory) throw new Error('Target category not found');
-      setNonEntities((prev) =>
-        prev.map((n) =>
-          n.category_pk === oldPk ? { ...n, category_pk: newPk, category_name: newCategory.name } : n
-        )
-      );
-      setRegistryNonEntities((prev) =>
-        prev.map((n) =>
-          n.category === oldPk ? { ...n, category: newPk } : n
-        )
-      );
+      
+      const redirectEntities = entityType !== 'non-entity';
+      const redirectNonEntities = entityType !== 'entity';
+      
+      if (redirectEntities) {
+        setActiveEntities((prev) =>
+          prev.map((e) =>
+            e.category_pk === oldPk ? { ...e, category_pk: newPk, category_name: newCategory.name } : e
+          )
+        );
+        setRegistryEntities((prev) =>
+          prev.map((e) =>
+            e.category === oldPk ? { ...e, category: newPk } : e
+          )
+        );
+      }
+      
+      if (redirectNonEntities) {
+        setNonEntities((prev) =>
+          prev.map((n) =>
+            n.category_pk === oldPk ? { ...n, category_pk: newPk, category_name: newCategory.name } : n
+          )
+        );
+        setRegistryNonEntities((prev) =>
+          prev.map((n) =>
+            n.category === oldPk ? { ...n, category: newPk } : n
+          )
+        );
+      }
     } catch (err) {
       console.error(err);
-      showToast('warning', `Failed to redirect non-entities from category '${oldPk}'.`);
+      showToast('warning', `Failed to redirect records from category '${oldPk}'.`);
     }
   };
 
-  const redirectEntitiesFromType = async (oldPk: string, newPk?: string) => {
+  const redirectFromType = async (oldPk: string, newPk?: string, entityType?: "entity" | "non-entity") => {
     try {
-      setActiveEntities((prev) =>
-        prev.map((e) =>
-          e.type_pk === oldPk ? { ...e, type_pk: newPk } : e
-        )
-      );
-      setRegistryEntities((prev) =>
-        prev.map((e) =>
-          e.type === oldPk ? { ...e, type: newPk } : e
-        )
-      );
+      const redirectEntities = entityType !== 'non-entity';
+      const redirectNonEntities = entityType !== 'entity';
+      
+      if (redirectEntities) {
+        setActiveEntities((prev) =>
+          prev.map((e) =>
+            e.type_pk === oldPk ? { ...e, type_pk: newPk } : e
+          )
+        );
+        setRegistryEntities((prev) =>
+          prev.map((e) =>
+            e.type === oldPk ? { ...e, type: newPk } : e
+          )
+        );
+      }
+      
+      if (redirectNonEntities) {
+        setNonEntities((prev) =>
+          prev.map((n) =>
+            n.type_pk === oldPk ? { ...n, type_pk: newPk } : n
+          )
+        );
+        setRegistryNonEntities((prev) =>
+          prev.map((n) =>
+            n.type === oldPk ? { ...n, type: newPk } : n
+          )
+        );
+      }
     } catch (err) {
       console.error(err);
-      showToast('warning', `Failed to redirect entities from type '${oldPk}'.`);
+      showToast('warning', `Failed to redirect records from type '${oldPk}'.`);
     }
   };
 
-  const redirectNonEntitiesFromType = async (oldPk: string, newPk?: string) => {
-    try {
-      setNonEntities((prev) =>
-        prev.map((n) =>
-          n.type_pk === oldPk ? { ...n, type_pk: newPk } : n
-        )
-      );
-      setRegistryNonEntities((prev) =>
-        prev.map((n) =>
-          n.type === oldPk ? { ...n, type: newPk } : n
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      showToast('warning', `Failed to redirect non-entities from type '${oldPk}'.`);
-    }
-  };
-
-  const splitDomain = async (oldCode: string, newDomains: { code: string; name: string; categoryPks: string[] }[]) => {
+  const splitDomain = async (oldCode: string, newDomains: { code: string; name: string; categoryPks: string[] }[], entityType?: "entity" | "non-entity") => {
     try {
       const oldDomain = domains.find(d => d.code === oldCode);
       if (!oldDomain) return;
@@ -1251,6 +1378,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           color: '#6366f1',
           icon: 'folder',
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.createDomain(domain);
         setDomains((prev) => [...prev, domain]);
@@ -1263,19 +1391,18 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
               ...cat,
               pk: cat.pk.replace(/^CAT-[A-Z]+-/, `CAT-${nd.code}-`),
               domainCode: nd.code,
+              entityType: entityType,
             };
             await taxonomyApi.createCategory(newCat);
             setCategories((prev) => [...prev, newCat]);
-            await redirectEntitiesFromCategory(catPk, newCat.pk);
-            await redirectNonEntitiesFromCategory(catPk, newCat.pk);
+            await redirectFromCategory(catPk, newCat.pk, entityType);
           }
         }
       }
 
       const targetCode = newDomains[0]?.code || oldCode;
-      await redirectEntitiesFromDomain(oldCode, targetCode);
-      await redirectNonEntitiesFromDomain(oldCode, targetCode);
-      await stopDomain(oldCode, targetCode);
+      await redirectFromDomain(oldCode, targetCode, entityType);
+      await stopDomain(oldCode, targetCode, entityType);
       await logDctChange('split', 'domain', oldDomain.dctId, oldDomain.name, newDomains.map(n => n.name).join(', '), `Domain '${oldDomain.name}' split into ${newDomains.length} domains`);
     } catch (err) {
       console.error(err);
@@ -1283,7 +1410,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const splitCategory = async (oldPk: string, newCategories: { pk: string; name: string; typePks: string[] }[]) => {
+  const splitCategory = async (oldPk: string, newCategories: { pk: string; name: string; typePks: string[] }[], entityType?: "entity" | "non-entity") => {
     try {
       const oldCategory = categories.find(c => c.pk === oldPk);
       if (!oldCategory) return;
@@ -1296,6 +1423,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           name: nc.name,
           description: `Split from ${oldPk}`,
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.createCategory(category);
         setCategories((prev) => [...prev, category]);
@@ -1308,19 +1436,18 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
               ...typ,
               pk: typ.pk.replace(/^TYP-[A-Z]+-[A-Z]+-/, `TYP-${oldCategory.domainCode}-${nc.pk.split('-').pop()}-`),
               categoryPk: nc.pk,
+              entityType: entityType,
             };
             await taxonomyApi.createType(newType);
             setTypes((prev) => [...prev, newType]);
-            await redirectEntitiesFromType(typePk, newType.pk);
-            await redirectNonEntitiesFromType(typePk, newType.pk);
+            await redirectFromType(typePk, newType.pk, entityType);
           }
         }
       }
 
       const targetPk = newCategories[0]?.pk || oldPk;
-      await redirectEntitiesFromCategory(oldPk, targetPk);
-      await redirectNonEntitiesFromCategory(oldPk, targetPk);
-      await stopCategory(oldPk, targetPk);
+      await redirectFromCategory(oldPk, targetPk, entityType);
+      await stopCategory(oldPk, targetPk, entityType);
       await logDctChange('split', 'category', oldCategory.dctId, oldCategory.name, newCategories.map(n => n.name).join(', '), `Category '${oldCategory.name}' split into ${newCategories.length} categories`);
     } catch (err) {
       console.error(err);
@@ -1328,7 +1455,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const splitType = async (oldPk: string, newTypes: { pk: string; name: string }[]) => {
+  const splitType = async (oldPk: string, newTypes: { pk: string; name: string }[], entityType?: "entity" | "non-entity") => {
     try {
       const oldType = types.find(t => t.pk === oldPk);
       if (!oldType) return;
@@ -1341,15 +1468,15 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           name: nt.name,
           description: `Split from ${oldPk}`,
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.createType(newType);
         setTypes((prev) => [...prev, newType]);
       }
 
       const targetPk = newTypes[0]?.pk || oldPk;
-      await redirectEntitiesFromType(oldPk, targetPk);
-      await redirectNonEntitiesFromType(oldPk, targetPk);
-      await stopType(oldPk, targetPk);
+      await redirectFromType(oldPk, targetPk, entityType);
+      await stopType(oldPk, targetPk, entityType);
       await logDctChange('split', 'type', oldType.dctId, oldType.name, newTypes.map(n => n.name).join(', '), `Type '${oldType.name}' split into ${newTypes.length} types`);
     } catch (err) {
       console.error(err);
@@ -1357,15 +1484,14 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const convertDomain = async (oldDctId: string, newDomain: { code: string; name: string }) => {
+  const convertDomain = async (oldDctId: string, newDomain: { code: string; name: string }, entityType?: "entity" | "non-entity") => {
     try {
       const oldDomain = domains.find(d => d.dctId === oldDctId || d.code === oldDctId);
       if (!oldDomain) return;
       const existingTarget = domains.find(d => d.code === newDomain.code);
       if (existingTarget) {
-        await redirectEntitiesFromDomain(oldDomain.code, newDomain.code);
-        await redirectNonEntitiesFromDomain(oldDomain.code, newDomain.code);
-        await stopDomain(oldDomain.code, newDomain.code);
+        await redirectFromDomain(oldDomain.code, newDomain.code, entityType);
+        await stopDomain(oldDomain.code, newDomain.code, entityType);
       } else {
         const converted: RegistryDomain = {
           dctId: oldDomain.dctId,
@@ -1375,11 +1501,11 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           color: oldDomain.color,
           icon: oldDomain.icon,
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.updateDomain(converted);
         setDomains((prev) => prev.map((d) => (d.dctId === oldDomain.dctId ? converted : d)));
-        await redirectEntitiesFromDomain(oldDomain.code, newDomain.code);
-        await redirectNonEntitiesFromDomain(oldDomain.code, newDomain.code);
+        await redirectFromDomain(oldDomain.code, newDomain.code, entityType);
       }
       await logDctChange('convert', 'domain', oldDomain.dctId, oldDomain.name, newDomain.name, `Domain '${oldDomain.name}' converted to '${newDomain.name}' (${newDomain.code})`);
       showToast('success', `Domain '${oldDomain.name}' converted successfully.`);
@@ -1389,15 +1515,14 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const convertCategory = async (oldDctId: string, newCategory: { pk: string; name: string }) => {
+  const convertCategory = async (oldDctId: string, newCategory: { pk: string; name: string }, entityType?: "entity" | "non-entity") => {
     try {
       const oldCategory = categories.find(c => c.dctId === oldDctId || c.pk === oldDctId);
       if (!oldCategory) return;
       const existingTarget = categories.find(c => c.pk === newCategory.pk);
       if (existingTarget) {
-        await redirectEntitiesFromCategory(oldCategory.pk, newCategory.pk);
-        await redirectNonEntitiesFromCategory(oldCategory.pk, newCategory.pk);
-        await stopCategory(oldCategory.pk, newCategory.pk);
+        await redirectFromCategory(oldCategory.pk, newCategory.pk, entityType);
+        await stopCategory(oldCategory.pk, newCategory.pk, entityType);
       } else {
         const converted: RegistryCategory = {
           dctId: oldCategory.dctId,
@@ -1406,11 +1531,11 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           name: newCategory.name,
           description: oldCategory.description,
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.updateCategory(converted);
         setCategories((prev) => prev.map((c) => (c.dctId === oldCategory.dctId ? converted : c)));
-        await redirectEntitiesFromCategory(oldCategory.pk, newCategory.pk);
-        await redirectNonEntitiesFromCategory(oldCategory.pk, newCategory.pk);
+        await redirectFromCategory(oldCategory.pk, newCategory.pk, entityType);
       }
       await logDctChange('convert', 'category', oldCategory.dctId, oldCategory.name, newCategory.name, `Category '${oldCategory.name}' converted to '${newCategory.name}' (${newCategory.pk})`);
       showToast('success', `Category '${oldCategory.name}' converted successfully.`);
@@ -1420,15 +1545,14 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const convertType = async (oldDctId: string, newType: { pk: string; name: string }) => {
+  const convertType = async (oldDctId: string, newType: { pk: string; name: string }, entityType?: "entity" | "non-entity") => {
     try {
       const oldType = types.find(t => t.dctId === oldDctId || t.pk === oldDctId);
       if (!oldType) return;
       const existingTarget = types.find(t => t.pk === newType.pk);
       if (existingTarget) {
-        await redirectEntitiesFromType(oldType.pk, newType.pk);
-        await redirectNonEntitiesFromType(oldType.pk, newType.pk);
-        await stopType(oldType.pk, newType.pk);
+        await redirectFromType(oldType.pk, newType.pk, entityType);
+        await stopType(oldType.pk, newType.pk, entityType);
       } else {
         const converted: RegistryType = {
           dctId: oldType.dctId,
@@ -1437,11 +1561,11 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
           name: newType.name,
           description: oldType.description,
           status: 'active',
+          entityType: entityType,
         };
         await taxonomyApi.updateType(converted);
         setTypes((prev) => prev.map((t) => (t.dctId === oldType.dctId ? converted : t)));
-        await redirectEntitiesFromType(oldType.pk, newType.pk);
-        await redirectNonEntitiesFromType(oldType.pk, newType.pk);
+        await redirectFromType(oldType.pk, newType.pk, entityType);
       }
       await logDctChange('convert', 'type', oldType.dctId, oldType.name, newType.name, `Type '${oldType.name}' converted to '${newType.name}' (${newType.pk})`);
       showToast('success', `Type '${oldType.name}' converted successfully.`);
@@ -1451,9 +1575,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  // ==================== MERGE ====================
-
-  const mergeDomains = async (sourceCodes: string[], targetCode: string) => {
+  const mergeDomains = async (sourceCodes: string[], targetCode: string, entityType?: "entity" | "non-entity") => {
     try {
       const targetDomain = domains.find(d => d.code === targetCode);
       if (!targetDomain) throw new Error('Target domain not found');
@@ -1462,9 +1584,8 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
         const sourceDomain = domains.find(d => d.code === sourceCode);
         if (!sourceDomain || sourceCode === targetCode) continue;
         
-        await redirectEntitiesFromDomain(sourceCode, targetCode);
-        await redirectNonEntitiesFromDomain(sourceCode, targetCode);
-        await stopDomain(sourceCode, targetCode);
+        await redirectFromDomain(sourceCode, targetCode, entityType);
+        await stopDomain(sourceCode, targetCode, entityType);
       }
       
       await logDctChange('edit', 'domain', targetDomain.dctId, 'merge', `${sourceCodes.length} merged`, `Merged ${sourceCodes.length} domains into '${targetDomain.name}'`);
@@ -1475,7 +1596,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const mergeCategories = async (sourcePks: string[], targetPk: string) => {
+  const mergeCategories = async (sourcePks: string[], targetPk: string, entityType?: "entity" | "non-entity") => {
     try {
       const targetCat = categories.find(c => c.pk === targetPk);
       if (!targetCat) throw new Error('Target category not found');
@@ -1484,9 +1605,8 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
         const sourceCat = categories.find(c => c.pk === sourcePk);
         if (!sourceCat || sourcePk === targetPk) continue;
         
-        await redirectEntitiesFromCategory(sourcePk, targetPk);
-        await redirectNonEntitiesFromCategory(sourcePk, targetPk);
-        await stopCategory(sourcePk, targetPk);
+        await redirectFromCategory(sourcePk, targetPk, entityType);
+        await stopCategory(sourcePk, targetPk, entityType);
       }
       
       await logDctChange('edit', 'category', targetCat.dctId, 'merge', `${sourcePks.length} merged`, `Merged ${sourcePks.length} categories into '${targetCat.name}'`);
@@ -1497,7 +1617,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
     }
   };
 
-  const mergeTypes = async (sourcePks: string[], targetPk: string) => {
+  const mergeTypes = async (sourcePks: string[], targetPk: string, entityType?: "entity" | "non-entity") => {
     try {
       const targetType = types.find(t => t.pk === targetPk);
       if (!targetType) throw new Error('Target type not found');
@@ -1506,9 +1626,8 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
         const sourceType = types.find(t => t.pk === sourcePk);
         if (!sourceType || sourcePk === targetPk) continue;
         
-        await redirectEntitiesFromType(sourcePk, targetPk);
-        await redirectNonEntitiesFromType(sourcePk, targetPk);
-        await stopType(sourcePk, targetPk);
+        await redirectFromType(sourcePk, targetPk, entityType);
+        await stopType(sourcePk, targetPk, entityType);
       }
       
       await logDctChange('edit', 'type', targetType.dctId, 'merge', `${sourcePks.length} merged`, `Merged ${sourcePks.length} types into '${targetType.name}'`);
@@ -1877,6 +1996,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
         category: hierarchy.category,
         type: hierarchy.type,
         linkedEntities: {},
+        role: stagingNonEntity.role,
       };
 
       const nonEntity: NonEntity = {
@@ -1901,6 +2021,7 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
         updatedAt: new Date().toISOString(),
         website_zone_entity_id: null,
         linkedEntities: {},
+        role: 'physical-service',
       };
 
       setRegistryNonEntities((prev) => [...prev, registryNonEntity]);
@@ -2098,14 +2219,21 @@ const nonEntitiesData = await nonEntityApi.seed(initialSeedNonEntities);
 
 const value: DataContextType = {
      isLoading,
-     states,
-     districts,
-     taluks,
-     cities,
-     areas,
-     streets,
-     substreets,
-     zoneRefs,
+      states,
+      districts,
+      taluks,
+      cities,
+      areas,
+      streets,
+      substreets,
+      zoneRefs,
+      setStates,
+      setDistricts,
+      setTaluks,
+      setCities,
+      setAreas,
+      setStreets,
+      setSubstreets,
      sites,
      activeEntities,
      pendingEntities,
@@ -2125,6 +2253,15 @@ const value: DataContextType = {
      getDistrictsByState,
      getTaluksByDistrict,
      getCitiesByTaluk,
+     addState,
+     updateStateItem,
+     deleteStateItem,
+     addDistrict,
+     updateDistrictItem,
+     deleteDistrictItem,
+     addTaluk,
+     updateTalukItem,
+     deleteTalukItem,
      addSite,
      updateSite,
      addEntity,
@@ -2174,12 +2311,9 @@ const value: DataContextType = {
      updateType,
      stopType,
      recoverType,
-     redirectEntitiesFromDomain,
-     redirectNonEntitiesFromDomain,
-     redirectEntitiesFromCategory,
-     redirectNonEntitiesFromCategory,
-     redirectEntitiesFromType,
-redirectNonEntitiesFromType,
+      redirectFromDomain,
+      redirectFromCategory,
+      redirectFromType,
      splitDomain,
      splitCategory,
      splitType,

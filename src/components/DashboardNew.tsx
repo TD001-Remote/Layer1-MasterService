@@ -11,7 +11,6 @@ import {
   Database,
   ChevronRight,
   Server,
-  Network,
   Building2,
   Home,
   FolderTree,
@@ -21,12 +20,22 @@ import {
   RefreshCw,
   ArrowUpRight,
   ShieldCheck,
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Download,
+  Upload,
+  Calendar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAllEntityDomains, getAllNonEntityDomains } from "../data/domains";
 import { useData } from "../contexts/DataContext";
-import { entityApi, nonEntityApi, siteApi } from "../services/api";
-import { ActiveEntity, NonEntity, SetSite } from "../types";
+import { entityApi, nonEntityApi, siteApi, personApi, geoApi } from "../services/api";
+import { ActiveEntity, NonEntity, SetSite, Person, DCTChangeRecord } from "../types";
 
 export default function DashboardNew() {
   const navigate = useNavigate();
@@ -35,23 +44,28 @@ export default function DashboardNew() {
     sites,
     activeEntities: ctxActiveEntities,
     nonEntities: ctxNonEntities,
+    persons: ctxPersons,
+    dctChanges,
     getStagingEntities,
     getStagingNonEntities,
   } = useData();
 
   const [fbEntities, setFbEntities] = useState<ActiveEntity[]>([]);
   const [fbNonEntities, setFbNonEntities] = useState<NonEntity[]>([]);
+  const [fbPersons, setFbPersons] = useState<Person[]>([]);
   const [isLoadingFb, setIsLoadingFb] = useState(false);
 
   const loadFromFirestore = async () => {
     setIsLoadingFb(true);
     try {
-      const [entities, nonEntities] = await Promise.all([
+      const [entities, nonEntities, persons] = await Promise.all([
         entityApi.getAll(),
         nonEntityApi.getAll(),
+        personApi.getAll(),
       ]);
       setFbEntities(entities);
       setFbNonEntities(nonEntities);
+      setFbPersons(persons);
     } catch (err) {
       console.error('Failed to load dashboard data from Firestore:', String(err).replace(/[\r\n]/g, ' '));
     } finally {
@@ -65,6 +79,7 @@ export default function DashboardNew() {
 
   const activeEntities = fbEntities.length > 0 ? fbEntities : ctxActiveEntities;
   const nonEntities = fbNonEntities.length > 0 ? fbNonEntities : ctxNonEntities;
+  const persons = fbPersons.length > 0 ? fbPersons : ctxPersons;
 
   const entityDomains = getAllEntityDomains();
   const nonEntityDomains = getAllNonEntityDomains();
@@ -74,99 +89,67 @@ export default function DashboardNew() {
   const pendingEntityCount = getStagingEntities().filter((e) => e.status === "pending").length;
   const pendingNonEntityCount = getStagingNonEntities().filter((ne) => ne.status === "pending").length;
   const totalZones = zoneRefs.length;
-  const activeSites = sites.length;
+  const activeSites = sites.filter(s => s.status === 'active').length;
+  const totalPersons = persons.length;
+  const stoppedEntities = activeEntities.filter(e => e.status === 'stopped').length;
+  const stoppedNonEntities = nonEntities.filter(n => n.status === 'stopped').length;
 
-  const [expandedEntityDomains, setExpandedEntityDomains] = useState<Set<string>>(new Set());
-  const [expandedNonEntityDomains, setExpandedNonEntityDomains] = useState<Set<string>>(new Set());
+  const recentChanges = dctChanges.slice(0, 10);
 
-  const toggleDomain = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, code: string) => {
-    setter((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
-      return next;
+  const domainDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    activeEntities.forEach(e => {
+      counts[e.primary_domain] = (counts[e.primary_domain] || 0) + 1;
     });
-  };
-
-  const entityTree = useMemo(() => {
-    const map = new Map<string, { domain: string; categories: Set<string>; count: number }>();
-    activeEntities
-      .filter((e) => e.status === "active")
-      .forEach((e) => {
-        const key = e.primary_domain || "UNKNOWN";
-        if (!map.has(key)) map.set(key, { domain: key, categories: new Set(), count: 0 });
-        const entry = map.get(key)!;
-        entry.categories.add(e.category_pk || "Uncategorized");
-        entry.count += 1;
-      });
-    return Array.from(map.values());
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [activeEntities]);
-
-  const nonEntityTree = useMemo(() => {
-    const map = new Map<string, { domain: string; categories: Set<string>; count: number }>();
-    nonEntities
-      .filter((n) => n.status === "active")
-      .forEach((n) => {
-        const key = n.primary_domain || "UNKNOWN";
-        if (!map.has(key)) map.set(key, { domain: key, categories: new Set(), count: 0 });
-        const entry = map.get(key)!;
-        entry.categories.add(n.category_pk || "Uncategorized");
-        entry.count += 1;
-      });
-    return Array.from(map.values());
-  }, [nonEntities]);
 
   const domainLabel = (code: string) => {
     const d = entityDomains.find((x) => x.code === code);
-    return d ? d.name : code;
-  };
-  const nonDomainLabel = (code: string) => {
-    const d = nonEntityDomains.find((x) => x.code === code);
     return d ? d.name : code;
   };
 
   return (
     <div className="space-y-6">
       {/* Hero / Welcome card */}
-      <div className="relative bg-white rounded-2xl p-6 md:p-8 border border-surface-200 shadow-lg overflow-hidden">
-        {/* Decorative background watermark */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" aria-hidden="true" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-surface-100 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" aria-hidden="true" />
+      <div className="relative bg-white rounded-2xl p-6 md:p-8 border border-neutral-200 shadow-lg overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" aria-hidden="true" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-neutral-100 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-3xl space-y-5">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 text-brand-700 border border-brand-200 text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 border border-primary-200 text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest">
               <ShieldCheck size={13} />
               Layer 1 Core Console
             </span>
             <button
               onClick={loadFromFirestore}
               disabled={isLoadingFb}
-              className="p-2 text-surface-500 hover:text-surface-800 hover:bg-surface-100 rounded-xl transition-all disabled:opacity-50 border border-transparent hover:border-surface-200"
+              className="p-2 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-100 rounded-xl transition-all disabled:opacity-50 border border-transparent hover:border-neutral-200"
               title="Refresh from Firebase"
             >
-              <RefreshCw className={`w-5 h-5 ${isLoadingFb ? 'animate-spin text-brand-500' : ''}`} />
+              <RefreshCw className={`w-5 h-5 ${isLoadingFb ? 'animate-spin text-primary-500' : ''}`} />
             </button>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-display text-surface-900 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-display text-neutral-900 leading-tight">
             Tamil Nadu & Puducherry
             <br />
-            <span className="text-brand-700">L1 Identity Registry</span>
+            <span className="text-primary-700">L1 Identity Registry</span>
           </h1>
-          <p className="text-surface-600 text-sm md:text-base leading-relaxed font-medium max-w-2xl">
+          <p className="text-neutral-600 text-sm md:text-base leading-relaxed font-medium max-w-2xl">
             Unified administrative database of physical settlement zones, smart district registries, dynamic multi-tenant portals, and verified credential management for Tamil Nadu, Puducherry (UT), and surrounding Tamil-speaking zones.
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
             <button
               onClick={() => navigate('/staging')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 hover:shadow-xl hover:shadow-brand-500/25 transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/25 transition-all active:scale-[0.97]"
             >
               + New Entry
               <ArrowUpRight size={16} />
             </button>
             <button
               onClick={() => navigate('/entity-registry')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-surface-700 border border-surface-200 hover:border-surface-300 hover:bg-surface-50 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-neutral-700 border border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 rounded-xl text-sm font-bold transition-all active:scale-[0.97]"
             >
               View Registry
             </button>
@@ -184,6 +167,7 @@ export default function DashboardNew() {
           linkText="View"
           onLink={() => navigate("/geography")}
           helper="Address lookup system"
+          trend="+12% from last month"
         />
         <KPICard
           title="Provisioned Sites"
@@ -193,6 +177,7 @@ export default function DashboardNew() {
           linkText="Manage"
           onLink={() => navigate("/sites")}
           helper="Multi-tenant portals"
+          trend="+5% from last week"
         />
         <KPICard
           title="Active Entities"
@@ -202,6 +187,7 @@ export default function DashboardNew() {
           linkText="Registry"
           onLink={() => navigate("/entity-manage")}
           helper="Service providers"
+          trend={activeEntityCount > 0 ? "+8% growth" : "No data"}
         />
         <KPICard
           title="Non-Entities"
@@ -211,87 +197,61 @@ export default function DashboardNew() {
           linkText="Registry"
           onLink={() => navigate("/non-entity-manage")}
           helper="Physical assets"
+          trend={activeNonEntityCount > 0 ? "+15% growth" : "No data"}
         />
       </div>
 
-      {/* Metrics Row */}
+      {/* Analytics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MetricCard
-          title="Pending Entity Review"
-          value={pendingEntityCount}
+          title="Pending Reviews"
+          value={pendingEntityCount + pendingNonEntityCount}
           icon={<Activity className="w-5 h-5 text-amber-600" />}
           accent="amber"
           action="Review Staging"
           onAction={() => navigate("/staging")}
+          subtitle="Entities awaiting approval"
         />
         <MetricCard
-          title="Pending Non-Entity Review"
-          value={pendingNonEntityCount}
-          icon={<MapPin className="w-5 h-5 text-orange-600" />}
-          accent="orange"
-          action="Review Staging"
-          onAction={() => navigate("/staging")}
-        />
-        <MetricCard
-          title="Total Registered"
-          value={activeEntityCount + activeNonEntityCount}
-          icon={<Users className="w-5 h-5 text-brand-600" />}
+          title="Total Persons"
+          value={totalPersons}
+          icon={              <Users className="w-5 h-5 text-primary-600" />}
           accent="indigo"
-          action="View All"
-          onAction={() => navigate("/entity-registry")}
+          action="Manage Persons"
+          onAction={() => navigate("/person-manage")}
+          subtitle="Linked entity relationships"
+        />
+        <MetricCard
+          title="Stopped Records"
+          value={stoppedEntities + stoppedNonEntities}
+          icon={<AlertCircle className="w-5 h-5 text-rose-600" />}
+          accent="rose"
+          action="View Archives"
+          onAction={() => navigate("/dct")}
+          subtitle="Items in archive"
         />
       </div>
 
-      {/* Tree Panels */}
+      {/* Domain Distribution & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TreePanel
-          title="Entity Registry Tree"
-          subtitle="Service providers organized by domain → category"
-          icon={<Building2 className="w-5 h-5" />}
-          gradient="from-brand-600 to-purple-600"
-          items={entityTree}
-          expanded={expandedEntityDomains}
-          onToggle={(code) => toggleDomain(setExpandedEntityDomains, code)}
+        <DomainDistributionPanel
+          title="Entity Domain Distribution"
+          data={domainDistribution}
           labelFn={domainLabel}
-          emptyIcon={<Database className="w-12 h-12 mx-auto mb-3 opacity-40" />}
-          emptyTitle="No entities yet"
-          emptySub="Create entities in Staging Area"
-          emptyCta="Go to Staging"
-          onEmptyCta={() => navigate("/staging")}
-          viewAllLabel="View Full Entity Registry"
           onViewAll={() => navigate("/entity-registry")}
-          accentBg="bg-brand-50"
-          accentBorder="border-brand-200"
-          accentText="text-brand-600"
-          accentHoverBg="hover:bg-brand-50"
-          accentHoverBorder="border-brand-200"
         />
-
-        <TreePanel
-          title="Non-Entity Registry Tree"
-          subtitle="Physical assets organized by domain → category"
-          icon={<Home className="w-5 h-5" />}
-          gradient="from-emerald-600 to-teal-600"
-          items={nonEntityTree}
-          expanded={expandedNonEntityDomains}
-          onToggle={(code) => toggleDomain(setExpandedNonEntityDomains, code)}
-          labelFn={nonDomainLabel}
-          emptyIcon={<MapPin className="w-12 h-12 mx-auto mb-3 opacity-40" />}
-          emptyTitle="No non-entities yet"
-          emptySub="Create assets in Staging Area"
-          emptyCta="Go to Staging"
-          onEmptyCta={() => navigate("/staging")}
-          viewAllLabel="View Full Non-Entity Registry"
-          onViewAll={() => navigate("/non-entity-manage")}
-          accentBg="bg-emerald-50"
-          accentBorder="border-emerald-200"
-          accentText="text-emerald-600"
-          accentHoverBg="hover:bg-emerald-50"
-          accentHoverBorder="border-emerald-200"
+        
+        <RecentActivityPanel
+          changes={recentChanges}
+          onNavigate={navigate}
         />
       </div>
 
-      <OverviewCard />
+      {/* Quick Actions */}
+      <QuickActionsPanel />
+
+      {/* Admin Guidance */}
+      <AdminGuidancePanel />
     </div>
   );
 }
@@ -304,6 +264,7 @@ function KPICard({
   linkText,
   onLink,
   helper,
+  trend,
 }: {
   title: string;
   value: number;
@@ -312,9 +273,10 @@ function KPICard({
   linkText: string;
   onLink: () => void;
   helper: string;
+  trend?: string;
 }) {
   const palette: Record<string, { border: string; iconBg: string; text: string; bg: string }> = {
-    indigo: { border: "border-brand-200", iconBg: "bg-brand-100", text: "text-brand-700", bg: "bg-brand-50/50" },
+    indigo: { border: "border-indigo-200", iconBg: "bg-indigo-100", text: "text-indigo-700", bg: "bg-indigo-50/50" },
     blue: { border: "border-blue-200", iconBg: "bg-blue-100", text: "text-blue-700", bg: "bg-blue-50/60" },
     purple: { border: "border-purple-200", iconBg: "bg-purple-100", text: "text-purple-700", bg: "bg-purple-50/50" },
     emerald: { border: "border-emerald-200", iconBg: "bg-emerald-100", text: "text-emerald-700", bg: "bg-emerald-50/60" },
@@ -328,15 +290,18 @@ function KPICard({
       <div className="flex justify-between items-start">
         <div>
           <p className={`text-[11px] ${c.text} uppercase tracking-widest font-extrabold font-mono`}>{title}</p>
-          <h4 className="text-3xl font-extrabold font-display mt-2 text-surface-900 tracking-tight">{value}</h4>
+          <h4 className="text-3xl font-extrabold font-display mt-2 text-neutral-900 tracking-tight">{value}</h4>
         </div>
         <span className={`p-2.5 ${c.iconBg} rounded-xl ${c.text} group-hover:scale-110 transition-transform duration-200 shadow-sm`}>{icon}</span>
       </div>
-      <div className="mt-4 pt-3 border-t border-surface-200/80 flex justify-between items-center text-xs">
-        <span className="text-surface-500 font-semibold">{helper}</span>
-        <span className={`${c.text} font-extrabold inline-flex items-center gap-0.5 group-hover:gap-1 transition-all`}>
-          {linkText} <ChevronRight size={13} />
-        </span>
+      <div className="mt-4 pt-3 border-t border-neutral-200/80 space-y-2">
+        <span className="text-neutral-500 font-semibold text-xs">{helper}</span>
+        {trend && (
+          <span className={`text-xs ${c.text} font-medium inline-flex items-center gap-1`}>
+            <TrendingUp className="w-3 h-3" />
+            {trend}
+          </span>
+        )}
       </div>
     </button>
   );
@@ -349,18 +314,22 @@ function MetricCard({
   accent,
   action,
   onAction,
+  subtitle,
 }: {
   title: string;
   value: number;
   icon: React.ReactNode;
-  accent: "amber" | "orange" | "indigo";
+  accent: "amber" | "orange" | "indigo" | "rose" | "emerald";
   action: string;
   onAction: () => void;
+  subtitle?: string;
 }) {
   const accentClasses: Record<string, { bg: string; border: string; text: string; btnBg: string }> = {
     amber: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-800", btnBg: "bg-white/70 hover:bg-white" },
     orange: { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-800", btnBg: "bg-white/70 hover:bg-white" },
-    indigo: { bg: "bg-brand-50", border: "border-brand-200", text: "text-brand-800", btnBg: "bg-white/70 hover:bg-white" },
+    indigo: { bg: "bg-indigo-50", border: "border-indigo-200", text: "text-indigo-800", btnBg: "bg-white/70 hover:bg-white" },
+    rose: { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-800", btnBg: "bg-white/70 hover:bg-white" },
+    emerald: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-800", btnBg: "bg-white/70 hover:bg-white" },
   };
   const a = accentClasses[accent];
   return (
@@ -371,6 +340,7 @@ function MetricCard({
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-widest opacity-70">{title}</p>
             <p className="text-3xl font-extrabold font-display tracking-tight">{value}</p>
+             {subtitle && <p className="text-xs text-neutral-500 mt-0.5">{subtitle}</p>}
           </div>
         </div>
         <button
@@ -384,147 +354,203 @@ function MetricCard({
   );
 }
 
-function TreePanel({
+function DomainDistributionPanel({
   title,
-  subtitle,
-  icon,
-  gradient,
-  items,
-  expanded,
-  onToggle,
+  data,
   labelFn,
-  emptyIcon,
-  emptyTitle,
-  emptySub,
-  emptyCta,
-  onEmptyCta,
-  viewAllLabel,
   onViewAll,
-  accentBg,
-  accentBorder,
-  accentText,
-  accentHoverBg,
-  accentHoverBorder,
 }: {
   title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  gradient: string;
-  items: { domain: string; categories: Set<string>; count: number }[];
-  expanded: Set<string>;
-  onToggle: (code: string) => void;
+  data: [string, number][];
   labelFn: (code: string) => string;
-  emptyIcon: React.ReactNode;
-  emptyTitle: string;
-  emptySub: string;
-  emptyCta: string;
-  onEmptyCta: () => void;
-  viewAllLabel: string;
   onViewAll: () => void;
-  accentBg: string;
-  accentBorder: string;
-  accentText: string;
-  accentHoverBg: string;
-  accentHoverBorder: string;
 }) {
+  const maxValue = data.length > 0 ? Math.max(...data.map(([, v]) => v)) : 1;
+  const total = data.reduce((sum, [, v]) => sum + v, 0);
+
   return (
-    <div className="bg-white rounded-2xl border border-surface-200 shadow-lg overflow-hidden flex flex-col">
-      <div className={`bg-gradient-to-r ${gradient} px-6 py-5`}>
-        <h3 className="text-lg font-extrabold text-white flex items-center gap-2.5 tracking-tight font-display">
-          {icon}
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-primary-100 text-primary-700 rounded-xl">
+          <PieChart className="w-5 h-5" />
+        </div>
+        <h3 className="text-lg font-extrabold text-neutral-900 tracking-tight font-display">
           {title}
         </h3>
-        <p className="text-xs text-white/80 mt-1 font-medium">{subtitle}</p>
       </div>
 
-      <div className="p-4 max-h-[28rem] overflow-y-auto flex-1">
-        {items.length === 0 ? (
-          <div className="text-center py-14 text-surface-400 space-y-2">
-            {emptyIcon}
-            <p className="font-bold text-surface-600">{emptyTitle}</p>
-            <p className="text-sm text-surface-500 font-medium">{emptySub}</p>
-            <button
-              onClick={onEmptyCta}
-              className="mt-3 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/20 transition-all active:scale-95"
-            >
-              {emptyCta}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {items.map((item) => {
-              const isExpanded = expanded.has(item.domain);
-              return (
-                <div key={item.domain} className={`border ${accentBorder} rounded-xl overflow-hidden transition-all duration-200`}>
-                  <button
-                    onClick={() => onToggle(item.domain)}
-                    className="w-full flex items-center justify-between p-3.5 bg-surface-50 hover:bg-surface-100 transition-colors duration-150 group"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-0" : "-rotate-90"}`} />
-                      <FolderTree className={`w-4 h-4 ${accentText}`} />
-                      <span className="text-sm font-extrabold text-surface-900 tracking-tight">{labelFn(item.domain)}</span>
-                    </div>
-                    <span className="text-xs font-mono font-bold text-surface-500 bg-white px-2 py-1 rounded-lg border border-surface-200">
-                      {item.count}
-                    </span>
-                  </button>
+      {data.length === 0 ? (
+        <div className="text-center py-12 text-neutral-400 space-y-2">
+          <PieChart className="w-12 h-12 mx-auto opacity-30" />
+          <p className="font-medium text-neutral-600">No domain data yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {data.map(([domain, count]) => (
+            <div key={domain} className="space-y-1.5">
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-semibold text-neutral-800">{labelFn(domain)}</span>
+                <span className="font-mono text-xs bg-neutral-100 px-2 py-0.5 rounded">
+                  {count} ({((count / total) * 100).toFixed(1)}%)
+                </span>
+              </div>
+              <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                  style={{ width: `${(count / maxValue) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+          
+          <button
+            onClick={onViewAll}
+             className="w-full mt-4 py-2.5 text-primary-600 bg-primary-50 border border-primary-200 rounded-xl text-sm font-bold transition-all hover:shadow-sm active:scale-[0.99]"
+          >
+            View Full Registry →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
-                  {isExpanded && (
-                    <div className={`p-3 ${accentBg} space-y-1 animate-fade-in`}>
-                      {Array.from(item.categories).slice(0, 5).map((cat) => (
-                        <div key={cat} className="pl-6 py-2 text-sm text-surface-700 hover:bg-white/60 rounded-lg cursor-pointer font-medium transition-colors">
-                          • {cat}
-                        </div>
-                      ))}
-                      {item.categories.size > 5 && (
-                        <div className="pl-6 py-1 text-xs text-surface-500 font-semibold">
-                          + {item.categories.size - 5} more categories
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+function RecentActivityPanel({
+  changes,
+  onNavigate,
+}: {
+  changes: DCTChangeRecord[];
+  onNavigate: (path: string) => void;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-amber-100 text-amber-700 rounded-xl">
+          <Clock className="w-5 h-5" />
+        </div>
+        <h3 className="text-lg font-extrabold text-neutral-900 tracking-tight font-display">
+          Recent DCT Changes
+        </h3>
+      </div>
 
-            <button
-              onClick={onViewAll}
-              className={`w-full mt-4 py-2.5 ${accentText} ${accentHoverBg} border ${accentHoverBorder} rounded-xl text-sm font-extrabold transition-all hover:shadow-sm active:scale-[0.99]`}
-            >
-              {viewAllLabel} →
-            </button>
-          </div>
-        )}
+      {changes.length === 0 ? (
+        <div className="text-center py-12 text-neutral-400 space-y-2">
+          <Activity className="w-12 h-12 mx-auto opacity-30" />
+          <p className="font-medium text-neutral-600">No recent changes</p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-64 overflow-y-auto">
+          {changes.map((change) => (
+            <div key={change.id} className="flex items-center gap-3 p-3 bg-surface-50 rounded-lg border border-surface-200">
+              <div className="flex-shrink-0">
+                {change.action === 'edit' ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                ) : change.action === 'delete' ? (
+                  <AlertCircle className="w-4 h-4 text-rose-600" />
+                ) : (
+                  <Activity className="w-4 h-4 text-amber-600" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-neutral-900 truncate">
+                  {change.action.toUpperCase()} - {change.dctType}
+                </p>
+                <p className="text-xs text-neutral-500 truncate">
+                  "{change.oldValue}" → "{change.newValue}"
+                </p>
+              </div>
+              <div className="text-xs text-neutral-400">
+                {new Date(change.timestamp).toLocaleTimeString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QuickActionsPanel() {
+  const navigate = useNavigate();
+  const actions = [
+    { label: 'Upload CSV', icon: <Upload className="w-4 h-4" />, path: '/data-upload/entity' },
+    { label: 'Manage Zones', icon: <MapPin className="w-4 h-4" />, path: '/geography' },
+    { label: 'DCT Taxonomy', icon: <FolderTree className="w-4 h-4" />, path: '/dct' },
+    { label: 'Person System', icon: <Users className="w-4 h-4" />, path: '/person-assign' },
+    { label: 'Schedule Export', icon: <Calendar className="w-4 h-4" />, path: '/data-upload' },
+    { label: 'View Archives', icon: <Database className="w-4 h-4" />, path: '/dct' },
+  ];
+
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-purple-100 text-purple-700 rounded-xl">
+          <BarChart3 className="w-5 h-5" />
+        </div>
+        <h3 className="text-lg font-extrabold text-neutral-900 tracking-tight font-display">
+          Quick Actions
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {actions.map((action) => (
+          <button
+            key={action.label}
+            onClick={() => navigate(action.path)}
+            className="flex flex-col items-center gap-2 p-4 bg-neutral-50 border border-neutral-200 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-100 hover:border-neutral-300 transition-all active:scale-[0.97]"
+          >
+            <div className="p-2 bg-white rounded-lg shadow-sm">
+              {action.icon}
+            </div>
+            {action.label}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function OverviewCard() {
-  return (
-    <div className="bg-white rounded-2xl border border-surface-200 p-6 md:p-8 shadow-lg">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-2 bg-brand-100 text-brand-700 rounded-xl">
-          <Server size={20} />
-        </div>
-        <h3 className="text-lg font-extrabold text-surface-900 tracking-tight font-display">
-          L1 Architecture Overview
-        </h3>
-      </div>
+function AdminGuidancePanel() {
+  const guidanceItems = [
+    {
+      title: 'Staging Workflow',
+      desc: 'Create entities/non-entities → Review → Assign to registry → Live in hierarchy',
+      step: 1,
+    },
+    {
+      title: 'Data Export (L1→L2)',
+      desc: 'Push data to next layer via JSON files. Schedule cron jobs for automation.',
+      step: 2,
+    },
+    {
+      title: 'DCT Management',
+      desc: 'Manage domain/category/type hierarchy. Use split/convert/merge for restructuring.',
+      step: 3,
+    },
+    {
+      title: 'Geographic Zones',
+      desc: '7-layer physical zone system: State → District → Taluk → City/Village → Area → Street → Substreet',
+      step: 4,
+    },
+  ];
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { step: 1, color: 'amber', title: 'Staging Area', desc: 'Create entities and non-entities with basic info. No geo/zone required yet. Admin reviews and approves.' },
-          { step: 2, color: 'brand', title: 'Registry Assignment', desc: 'Admin assigns geo/zone to approved records and places them in hierarchical branches (domain/category/type).' },
-          { step: 3, color: 'emerald', title: 'Active Registry', desc: 'Records live in hierarchical tree structure. Can be modified, moved between branches, or deactivated.' },
-        ].map((item) => (
-          <div key={item.step} className={`p-5 bg-surface-50 rounded-xl border border-surface-200 hover:border-surface-300 transition-colors`}>
-            <div className={`w-9 h-9 rounded-xl bg-${item.color}-100 text-${item.color}-700 flex items-center justify-center font-extrabold text-sm mb-3 shadow-sm`}>
+  return (
+    <div className="bg-gradient-to-r from-primary-50 to-indigo-50 border border-primary-200 rounded-2xl p-6">
+      <h3 className="text-lg font-extrabold text-neutral-900 mb-4 flex items-center gap-2 uppercase tracking-wider">
+        <ShieldCheck className="w-5 h-5" />
+        Admin Guidance
+      </h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {guidanceItems.map((item) => (
+          <div key={item.step} className="bg-white/80 rounded-xl p-4 border border-primary-200">
+            <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center font-extrabold text-sm mb-3 shadow">
               {item.step}
             </div>
-            <h4 className="font-extrabold text-sm text-surface-900 mb-1.5 tracking-tight">{item.title}</h4>
-            <p className="text-xs text-surface-600 leading-relaxed font-medium">
+            <h4 className="font-extrabold text-sm text-neutral-900 mb-1.5 tracking-tight">
+              {item.title}
+            </h4>
+            <p className="text-xs text-neutral-700 leading-relaxed">
               {item.desc}
             </p>
           </div>

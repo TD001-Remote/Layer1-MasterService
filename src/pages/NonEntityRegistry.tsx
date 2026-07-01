@@ -94,7 +94,7 @@ export default function NonEntityRegistry() {
       <div className="bg-white rounded-2xl border border-surface-200 shadow-lg p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 text-emerald-700 rounded-xl shadow-sm">
+            <div className="p-3 bg-nonentity-100 text-nonentity-700 rounded-xl shadow-sm">
               <Home className="w-6 h-6" />
             </div>
             <div>
@@ -120,7 +120,7 @@ export default function NonEntityRegistry() {
               <RefreshCw className={`w-5 h-5 ${isLoadingFb ? 'animate-spin text-brand-500' : ''}`} />
             </button>
             <div className="text-right pl-3 border-l border-surface-200">
-              <div className="text-2xl font-extrabold text-emerald-600 font-display">{activeNonEntities.length}</div>
+              <div className="text-2xl font-extrabold text-nonentity-600 font-display">{activeNonEntities.length}</div>
               <div className="text-[11px] text-surface-500 font-bold uppercase tracking-wider">Active Non-Entities</div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function NonEntityRegistry() {
           onClick={() => setViewMode('pending-assignment')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'pending-assignment'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+              ? 'bg-nonentity-600 text-white shadow-lg shadow-nonentity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -149,7 +149,7 @@ export default function NonEntityRegistry() {
           onClick={() => setViewMode('manage-records')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'manage-records'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+              ? 'bg-nonentity-600 text-white shadow-lg shadow-nonentity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -160,7 +160,7 @@ export default function NonEntityRegistry() {
           onClick={() => setViewMode('branch-operations')}
           className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             viewMode === 'branch-operations'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+              ? 'bg-nonentity-600 text-white shadow-lg shadow-nonentity-500/20'
               : 'text-surface-600 hover:bg-surface-50'
           }`}
         >
@@ -198,8 +198,8 @@ export default function NonEntityRegistry() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                              <Home className="w-6 h-6 text-emerald-700" />
+                             <div className="w-12 h-12 rounded-xl bg-nonentity-100 flex items-center justify-center">
+                               <Home className="w-6 h-6 text-nonentity-700" />
                             </div>
                             <div>
                               <h4 className="font-bold text-slate-900 text-lg">{nonEntity.non_entity_name}</h4>
@@ -219,7 +219,7 @@ export default function NonEntityRegistry() {
                         
                         <button
                           onClick={() => handleAssignGeo(nonEntity.id)}
-                          className="ml-4 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium shadow-sm hover:shadow transition-all flex items-center gap-2"
+                           className="ml-4 px-5 py-2.5 bg-nonentity-600 hover:bg-nonentity-700 text-white rounded-lg font-medium shadow-sm hover:shadow transition-all flex items-center gap-2"
                         >
                           <MapPin className="w-4 h-4" />
                           Assign Geo Location
@@ -252,14 +252,14 @@ export default function NonEntityRegistry() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by non-entity name..."
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                   className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nonentity-500"
                 />
               </div>
               
               <select
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
-                className="px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nonentity-500"
               >
                 <option value="">All Domains</option>
                 {allDomainCodes.map(code => (
@@ -315,7 +315,7 @@ export default function NonEntityRegistry() {
                             <div className="flex justify-end gap-2">
                               <button
                                 onClick={() => handleEdit(nonEntity.non_entity_pk)}
-                                className="p-2 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                className="p-2 text-slate-600 hover:text-nonentity-600 hover:bg-nonentity-50 rounded-lg transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="w-4 h-4" />
@@ -363,10 +363,10 @@ export default function NonEntityRegistry() {
                   
                   return (
                     <div key={domainCode} className="border border-slate-200 rounded-lg overflow-hidden">
-                      <div className="bg-emerald-50 px-4 py-3 border-b border-emerald-200">
+                      <div className="bg-nonentity-50 px-4 py-3 border-b border-nonentity-200">
                         <div className="flex items-center justify-between">
                           <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                            <GitBranch className="w-4 h-4 text-emerald-600" />
+                            <GitBranch className="w-4 h-4 text-nonentity-600" />
                             {domain?.name || domainCode}
                           </h4>
                           <span className="text-sm text-slate-600 font-medium">{nonEntities.length} non-entities</span>
@@ -389,7 +389,7 @@ export default function NonEntityRegistry() {
                                 </div>
                                 <button
                                   onClick={() => handleMoveBranch(nonEntity.non_entity_pk)}
-                                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                                  className="px-4 py-2 bg-nonentity-600 hover:bg-nonentity-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
                                 >
                                   <GitBranch className="w-4 h-4" />
                                   Move Branch
